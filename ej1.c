@@ -1,44 +1,69 @@
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include "generacion.h"
+
+#define MAX_ETIQUETAS 4
+
 int main(int argc, char **argv)
 {
-    FILE *salida;
     if (argc != 2)
     {
-        fprintf(stdout, " ERROR POCOS ARGUMENTOS\n ");
+        fprintf(stdout, "ERROR POCOS ARGUMENTOS\n");
         return -1;
     }
-    salida = fopen(argv[1], "w");
-    escribir_subseccion_data(salida);
-    escribir_cabecera_bss(salida);
-    declarar_variable(salida, "x", ENTERO, 1);
-    declarar_variable(salida, "y", ENTERO, 1);
-    declarar_variable(salida, "z", ENTERO, 1);
-    escribir_segmento_codigo(salida);
-    escribir_inicio_main(salida);
-    /* x=8; */
-    escribir_operando(salida, " 8 ", 0);
-    asignar(salida, "x", 0);
-    /* scanf(&amp;y); */
-    leer(salida, "y", ENTERO);
-    /* z = x + y */
-    escribir_operando(salida, "x", 1);
-    escribir_operando(salida, "y", 1);
-    sumar(salida, 1, 1);
-    asignar(salida, "z", 0);
-    /* printf(z); */
-    escribir_operando(salida, "z", 1);
-    escribir(salida, 1, ENTERO);
-    /* z = 7 + y */
-    escribir_operando(salida, "7", 0);
-    escribir_operando(salida, "y", 1);
-    sumar(salida, 0, 1);
+    int etiqueta = 0;
+    int getiqueta = 0;
+    int etiquetas[MAX_ETIQUETAS];
+    int cima_etiquetas = -1;
+    FILE *fd_asm;
+    fd_asm = fopen(argv[1], "w");
+    escribir_subseccion_data(fd_asm);
+    escribir_cabecera_bss(fd_asm);
+    //int m;
+    declarar_variable(fd_asm, "m", 1, 1);
+    //int [4] v;
+    declarar_variable(fd_asm, "v", 1, 4);
+    escribir_segmento_codigo(fd_asm);
+    escribir_inicio_main(fd_asm);
+    //m=0;
+    escribir_operando(fd_asm, "0", 0);
+    asignar(fd_asm, "m", 0);
+    //While. Gestion inicial de las etiquetas, guardado de etiqueta.
+    getiqueta++;
+    cima_etiquetas++;
+    etiquetas[cima_etiquetas] = getiqueta;
+    //Inicio del while. Impresion de la etiqueta.
+    etiqueta = etiquetas[cima_etiquetas];
+    while_inicio(fd_asm, etiqueta);
+    //Condicion del bucle while.
+    escribir_operando(fd_asm, "m", 1);
+    escribir_operando(fd_asm, "4", 0);
+    menor_igual(fd_asm, 1, 0, etiqueta);
+    //Recuperamos la etiqueta para imprimir la comparacion del while.
+    etiqueta = etiquetas[cima_etiquetas];
+    while_exp_pila(fd_asm, 0, etiqueta);
+    //printf m
+    escribir_operando(fd_asm, "m", 1);
+    escribir(fd_asm, 1, ENTERO);
+    //v[m] = m*10;
+    escribir_operando(fd_asm, "m", 1);
+    escribir_operando(fd_asm, "10", 0);
+    multiplicar(fd_asm, 1, 0);
+    escribir_operando(fd_asm, "m", 1);
+    escribir_elemento_vector(fd_asm, "v", 4, 1);
+    asignarDestinoEnPila(fd_asm, 0);
 
-    asignar(salida, "z", 0);
-    /* printf(z); */
-    escribir_operando(salida, "z", 1);
-    escribir(salida, 1, ENTERO);
-    escribir_fin(salida);
-    fclose(salida);
-    return 0;
+    //m = m + 1
+    escribir_operando(fd_asm, "m", 1);
+    escribir_operando(fd_asm, "1", 0);
+    sumar(fd_asm, 1, 0);
+    asignar(fd_asm, "m", 0);
+    //Recuperamos la etiqueta para imprimir el fin de etiqueta del while.
+    etiqueta = etiquetas[cima_etiquetas];
+    while_fin(fd_asm, etiqueta);
+    //Al cerrar el ámbito, decrementamos el contador de cima de etiquetas.
+    cima_etiquetas--;
+    escribir_fin(fd_asm);
+    fclose(fd_asm);
 }

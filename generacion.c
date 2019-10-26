@@ -40,8 +40,8 @@ void escribir_subseccion_data(FILE *fpasm)
         return;
 
     fprintf(fpasm, "segment .data\n");
-    fprintf(fpasm, "\tzero_error db 'Error, has dividido por 0'\n");
-    fprintf(fpasm, "\tout_of_range_error db 'Error, al acceder al vector'\n");
+    fprintf(fpasm, "\tzero_error db 'Error, has dividido por 0',0\n");
+    fprintf(fpasm, "\tout_of_range_error db 'Error, al acceder al vector',0\n");
     fprintf(fpasm, "\n\n");
 }
 
@@ -62,7 +62,7 @@ void escribir_segmento_codigo(FILE *fpasm)
     fprintf(fpasm, "segment .text\n");
     fprintf(fpasm, "global main\n");
     /*TODO comprobar que no hay mas funciones*/
-    fprintf(fpasm, "extern print_string, print_endofline, scan_int, print_int, scan_int\n");
+    fprintf(fpasm, "extern print_string, print_endofline, scan_int, print_int, scan_int, scan_boolean, print_boolean\n");
     fprintf(fpasm, "\n\n");
 }
 
@@ -84,19 +84,25 @@ void escribir_fin(FILE *fpasm)
     /*caso division por cero:*/
     fprintf(fpasm, "div_zero_fin:\n");
     fprintf(fpasm, "\tpush dword zero_error\n");
-    fprintf(fpasm, "\t call print_string\n");
+    fprintf(fpasm, "\tcall print_string\n");
     fprintf(fpasm, "\tadd esp, 4\n");
     fprintf(fpasm, "\tcall print_endofline\n");
-    fprintf(fpasm, "\tret\n");
+    /*Por algun motivo ret me da segmentation fault*/
+    fprintf(fpasm, "\t mov eax, 1\n");
+    fprintf(fpasm, "\tmov ebx, 0\n");
+    fprintf(fpasm, "\tint 80h\n");
     fprintf(fpasm, "\n\n");
 
     /*caso acceso fuera de un vector*/
     fprintf(fpasm, "out_of_range_vector_fin:\n");
     fprintf(fpasm, "\tpush dword out_of_range_error\n");
-    fprintf(fpasm, "\t call print_string\n");
+    fprintf(fpasm, "\tcall print_string\n");
     fprintf(fpasm, "\tadd esp, 4\n");
     fprintf(fpasm, "\tcall print_endofline\n");
-    fprintf(fpasm, "\tret\n");
+    /*Por algun motivo ret me da segmentation fault*/
+    fprintf(fpasm, "\t mov eax, 1\n");
+    fprintf(fpasm, "\tmov ebx, 0\n");
+    fprintf(fpasm, "\tint 80h\n");
     fprintf(fpasm, "\n\n");
 }
 
@@ -112,7 +118,7 @@ void escribir_operando(FILE *fpasm, char *nombre, int es_variable)
         fprintf(fpasm, "\tpush dword %s\n", nombre);
     }
 
-    /*No pongo doble salto de lines porque se puede hacer varias veces*/
+    /*No pongo doble salto de linea porque se puede hacer varias veces*/
 }
 
 void asignar(FILE *fpasm, char *nombre, int es_variable)
@@ -208,11 +214,12 @@ void dividir(FILE *fpasm, int es_variable_1, int es_variable_2)
 
     /*comprobacion del divisor*/
     fprintf(fpasm, "\tcmp ebx, 0\n");    /*if (divisor == 0)*/
-    fprintf(fpasm, "\tje div_zero_fin"); /*error division por cero*/
+    fprintf(fpasm, "\tje div_zero_fin\n"); /*error division por cero*/
 
     /*else*/
     /*Operamos y guardamos el resultado en la pila*/
-    fprintf(fpasm, "\tdiv ebx\n"); /*eax = eax/ebx y edx el resto*/
+    fprintf(fpasm, "\tcdq\n"); /*convert double to quad*/
+    fprintf(fpasm, "\tidiv ebx\n"); /*eax = eax/ebx y edx el resto*/
     fprintf(fpasm, "\tpush dword eax\n");
     fprintf(fpasm, "\n\n");
 }
@@ -587,7 +594,7 @@ por lo que sólo se necesita que se utilice la etiqueta que corresponde al momen
 */
 void ifthenelse_fin(FILE *fpasm, int etiqueta)
 {
-    fprintf(fpasm, "_else_fin_%d:\n", etiqueta);
+    fprintf(fpasm, "_else_%d:\n", etiqueta);
 }
 /*
 - Generación de código para el fin de una estructura if-then-else
@@ -613,13 +620,13 @@ void while_exp_pila(FILE *fpasm, int exp_es_variable, int etiqueta)
     }
 
     fprintf(fpasm, "\tcmp eax, 0\n");
-    fprintf(fpasm, "\tje near _fin_while_%d\n", etiqueta);
+    fprintf(fpasm, "\tje _while_fin_%d\n", etiqueta);
 }
 void while_fin(FILE *fpasm, int etiqueta)
 {
 
     fprintf(fpasm, "\tjmp _while_inicio_%d\n", etiqueta);
-    fprintf(fpasm, "while_fin_%d:\n", etiqueta);
+    fprintf(fpasm, "_while_fin_%d:\n", etiqueta);
 }
 void escribir_elemento_vector(FILE *fpasm, char *nombre_vector,
                               int tam_max, int exp_es_direccion)
@@ -634,11 +641,11 @@ void escribir_elemento_vector(FILE *fpasm, char *nombre_vector,
 
     /*comprobamos que no accedemos a una posicion menor que cero*/
     fprintf(fpasm, "\tcmp eax,0\n");
-    fprintf(fpasm, "\tjl error_vector\n");
+    fprintf(fpasm, "\tjl out_of_range_vector_fin\n");
 
     /*comprobamos que no nos pasamos por arriba*/
     fprintf(fpasm, "\tcmp eax, %d\n", tam_max - 1);
-    fprintf(fpasm, "\tjg near error_vector\n");
+    fprintf(fpasm, "\tjg out_of_range_vector_fin\n");
 
     /*Cuando no hay errores de acceso se procede*/
     fprintf(fpasm, "\tmov dword edx, _%s\n", nombre_vector);
