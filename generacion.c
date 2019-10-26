@@ -1,4 +1,4 @@
-#include <stdio.h>;
+#include <stdio.h>
 #include "generacion.h"
 
 /**************************************************************************/
@@ -32,7 +32,6 @@ void escribir_cabecera_bss(FILE *fpasm)
         return;
 
     fprintf(fpasm, "segment .bss\n__esp    resd 1\n");
-    fprintf(fpasm, "\n\n");
 }
 
 void escribir_subseccion_data(FILE *fpasm)
@@ -53,7 +52,7 @@ void declarar_variable(FILE *fpasm, char *nombre, int tipo, int tamano)
         return;
 
     /*TODO lo mismo el tipo importa*/
-    fprintf(fpasm, "_%s, resd %d\n", nombre, tamano);
+    fprintf(fpasm, "_%s resd %d\n", nombre, tamano);
 
     /*Aqui no terminamos con dos saltos de linea por si se declaran varias variables seguidas*/
 }
@@ -63,7 +62,7 @@ void escribir_segmento_codigo(FILE *fpasm)
     fprintf(fpasm, "segment .text\n");
     fprintf(fpasm, "global main\n");
     /*TODO comprobar que no hay mas funciones*/
-    fprintf(fpasm, "  extern print_string, print_endofline, scan_int, print_int\n");
+    fprintf(fpasm, "extern print_string, print_endofline, scan_int, print_int, scan_int\n");
     fprintf(fpasm, "\n\n");
 }
 
@@ -498,11 +497,11 @@ void leer(FILE *fpasm, char *nombre, int tipo)
     }
     else
     {
-        fprintf(fpasm, "\tcall scan_print\n");
+        fprintf(fpasm, "\tcall scan_int\n");
     }
 
     /*la pila debe estar bien*/
-    fprintf(fpasm, "\tadd _esp, 4\n");
+    fprintf(fpasm, "\tadd esp, 4\n");
 
     fprintf(fpasm, "\n\n");
 }
@@ -521,11 +520,11 @@ void escribir(FILE *fpasm, int es_variable, int tipo)
 
     else
     {
-        fprintf(fpasm, "\tcall print_print\n");
+        fprintf(fpasm, "\tcall print_int\n");
     }
 
     /*la pila debe estar bien*/
-    fprintf(fpasm, "\tadd _esp, 4\n");
+    fprintf(fpasm, "\tadd esp, 4\n");
     fprintf(fpasm, "\tcall print_endofline\n");
 
     fprintf(fpasm, "\n\n");
@@ -552,7 +551,7 @@ void ifthen_inicio(FILE *fpasm, int exp_es_variable, int etiqueta)
     }
 
     fprintf(fpasm, "\tcmp eax, 0\n");
-    fprintf(fpasm, "\tje _if_final_%d\n", etiqueta);
+    fprintf(fpasm, "\tje _if_fin_%d\n", etiqueta);
 }
 /*
 - Generación de código para el inicio de una estructura if-then
@@ -565,6 +564,7 @@ elemento de vector)
 */
 void ifthen_fin(FILE *fpasm, int etiqueta)
 {
+    fprintf(fpasm, "_if_fin_%d:\n", etiqueta);
 }
 /*
 - Generación de código para el fin de una estructura if-then
@@ -574,14 +574,21 @@ según se ha explicado
 - Y tras ser invocada debe realizar el proceso para ajustar la información de las etiquetas
 puesto que se ha liberado la última de ellas.
 */
-void ifthenelse_fin_then(FILE *fpasm, int etiqueta);
+void ifthenelse_fin_then(FILE *fpasm, int etiqueta)
+{
+    fprintf(fpasm, "\tjmp _else_%d\n", etiqueta);
+    fprintf(fpasm, "_if_fin_%d:\n", etiqueta);
+}
 /*
 - Generación de código para el fin de la rama then de una estructura if-then-else
 - Sólo necesita usar la etiqueta adecuada, aunque es el final de una rama, luego debe venir
 otra (la rama else) antes de que se termine la estructura y se tenga que ajustar las etiquetas
 por lo que sólo se necesita que se utilice la etiqueta que corresponde al momento actual.
 */
-void ifthenelse_fin(FILE *fpasm, int etiqueta);
+void ifthenelse_fin(FILE *fpasm, int etiqueta)
+{
+    fprintf(fpasm, "_else_fin_%d:\n", etiqueta);
+}
 /*
 - Generación de código para el fin de una estructura if-then-else
 - Como es el fin de uno bloque de control de flujo de programa que hace uso de la etiqueta
@@ -724,12 +731,12 @@ void llamarFuncion(FILE *fd_asm, char *nombre_funcion, int num_argumentos)
     /*push de eax porque al final nos lo pueden sobreesribir al retornar*/
     fprintf(fd_asm, "\tpush dword eax\n");
 
-    fprintf(fd_asm,"\n\n");
+    fprintf(fd_asm, "\n\n");
 }
 void limpiarPila(FILE *fd_asm, int num_argumentos)
 {
     /*añadir a la pila y listo*/
     fprintf(fd_asm, "add esp, %d\n", 4 * num_argumentos);
 
-    fprintf(fd_asm,"\n\n");
+    fprintf(fd_asm, "\n\n");
 }
