@@ -1,60 +1,62 @@
-/*Definiciones*/
-/*Declaraciones de variables, funciones y #include*/
 %{
+#include <stdlib.h>
 #include <stdio.h>
-#include <string.h>
-#include "tokens.h"
+#include "y.tab.h"
 
-int line = 0;
+int line = 1;
 int col = 0;
-char tokcad[25];
-char *tok;
 extern FILE* fout;
+
 %}
 
 %option noyywrap
+
 DIGITO			[0-9]
 LETRA			[a-zA-Z]
 ENTERO			{DIGITO}*
 COMENTARIO		"//".*\n
 IDENTIFICADOR 	{LETRA}({LETRA}|{DIGITO})*
 
-
 %%
-main        {col+=yyleng; fprintf(fout, ";D:\t%s\n", yytext); return TOK_MAIN;}
-int         {col+=yyleng; fprintf(fout, ";D:\t%s\n", yytext); return TOK_INT;}
-boolean     {col+=yyleng; fprintf(fout, ";D:\t%s\n", yytext); return TOK_BOOLEAN;}
-array       {col+=yyleng; fprintf(fout, ";D:\t%s\n", yytext); return TOK_ARRAY;}
-function    {col+=yyleng; fprintf(fout, ";D:\t%s\n", yytext); return TOK_FUNCTION;}
-if          {col+=yyleng; fprintf(fout, ";D:\t%s\n", yytext); return TOK_IF;}
-else        {col+=yyleng; fprintf(fout, ";D:\t%s\n", yytext); return TOK_ELSE;}
-while       {col+=yyleng; fprintf(fout, ";D:\t%s\n", yytext); return TOK_WHILE;}
-scanf       {col+=yyleng; fprintf(fout, ";D:\t%s\n", yytext); return TOK_SCANF;}
-printf      {col+=yyleng; fprintf(fout, ";D:\t%s\n", yytext); return TOK_PRINTF;}
-return      {col+=yyleng; fprintf(fout, ";D:\t%s\n", yytext); return TOK_RETURN;}
-
-";"          {col+=yyleng; fprintf(fout, ";D:\t;\n"); return TOK_PUNTOYCOMA;}
-","          {col+=yyleng; fprintf(fout, ";D:\t,\n"); return TOK_COMA;}
-"("          {col+=yyleng; fprintf(fout, ";D:\t(\n"); return TOK_PARENTESISIZQUIERDO;}
-")"          {col+=yyleng; fprintf(fout, ";D:\t)\n"); return TOK_PARENTESISDERECHO;}
-"["          {col+=yyleng; fprintf(fout, ";D:\t[\n"); return TOK_CORCHETEIZQUIERDO;}
-"]"          {col+=yyleng; fprintf(fout, ";D:\t]\n"); return TOK_CORCHETEDERECHO;}
-"{"          {col+=yyleng; fprintf(fout, ";D:\t{\n"); return TOK_LLAVEIZQUIERDA;}
-"}"          {col+=yyleng; fprintf(fout, ";D:\t}\n"); return TOK_LLAVEDERECHA;}
-"="          {col+=yyleng; fprintf(fout, ";D:\t=\n"); return TOK_ASIGNACION;}
-"+"          {col+=yyleng; fprintf(fout, ";D:\t+\n"); return TOK_MAS;}
-"-"          {col+=yyleng; fprintf(fout, ";D:\t-\n"); return TOK_MENOS;}
-"/"          {col+=yyleng; fprintf(fout, ";D:\t/\n"); return TOK_DIVISION;}
-"*"          {col+=yyleng; fprintf(fout, ";D:\t*\n"); return TOK_ASTERISCO;}
-"&"          {col+=yyleng; fprintf(fout, ";D:\t&\n"); return TOK_AND;}
-"|"          {col+=yyleng; fprintf(fout, ";D:\t|\n"); return TOK_OR;}
-"!"          {col+=yyleng; fprintf(fout, ";D:\t!\n"); return TOK_NOT;}
-"=="         {col+=yyleng; fprintf(fout, ";D:\t==\n"); return TOK_IGUAL;}
-"!="         {col+=yyleng; fprintf(fout, ";D:\t!=\n"); return TOK_DISTINTO;}
-"<="         {col+=yyleng; fprintf(fout, ";D:\t<=\n"); return TOK_MENORIGUAL;}
-">="         {col+=yyleng; fprintf(fout, ";D:\t>=\n"); return TOK_MAYORIGUAL;}
-"<"          {col+=yyleng; fprintf(fout, ";D:\t<\n"); return TOK_MENOR;}
-">"          {col+=yyleng; fprintf(fout, ";D:\t>\n"); return TOK_MAYOR;}
+function			{col+=yyleng; fprintf(fout, ";D:\t%s\n", yytext); return TOK_FUNCTION;}
+return				{col+=yyleng; fprintf(fout, ";D:\t%s\n", yytext); return TOK_RETURN;}
+main				{col+=yyleng; fprintf(fout, ";D:\t%s\n", yytext); return TOK_MAIN;}
+boolean				{col+=yyleng; fprintf(fout, ";D:\t%s\n", yytext); return TOK_BOOLEAN;}
+array				{col+=yyleng; fprintf(fout, ";D:\t%s\n", yytext); return TOK_ARRAY;}
+printf				{col+=yyleng; fprintf(fout, ";D:\t%s\n", yytext); return TOK_PRINTF;}
+int					{col+=yyleng; fprintf(fout, ";D:\t%s\n", yytext); return TOK_INT;}
+if					{col+=yyleng; fprintf(fout, ";D:\t%s\n", yytext); return TOK_IF;}
+else				{col+=yyleng; fprintf(fout, ";D:\t%s\n", yytext); return TOK_ELSE;}
+while				{col+=yyleng; fprintf(fout, ";D:\t%s\n", yytext); return TOK_WHILE;}
+scanf				{col+=yyleng; fprintf(fout, ";D:\t%s\n", yytext); return TOK_SCANF;}
+false				{col+=yyleng; fprintf(fout, ";D:\t%s\n", yytext); return TOK_FALSE;}
+true				{col+=yyleng; fprintf(fout, ";D:\t%s\n", yytext); return TOK_TRUE;}
+==					{col+=yyleng; fprintf(fout, ";D:\t%s\n", yytext); return TOK_IGUAL;}
+"!="				{col+=yyleng; fprintf(fout, ";D:\t%s\n", yytext); return TOK_DISTINTO;}
+"<="				{col+=yyleng; fprintf(fout, ";D:\t%s\n", yytext); return TOK_MENORIGUAL;}
+">="				{col+=yyleng; fprintf(fout, ";D:\t%s\n", yytext); return TOK_MAYORIGUAL;}
+"&&"				{col+=yyleng; fprintf(fout, ";D:\t%s\n", yytext); return TOK_AND;}
+"||"				{col+=yyleng; fprintf(fout, ";D:\t%s\n", yytext); return TOK_OR;}
+";"					{col+=yyleng; fprintf(fout, ";D:\t;\n"); return yytext[0];}
+"#"					{col+=yyleng; fprintf(fout, ";D:\t#\n"); return yytext[0];}
+","					{col+=yyleng; fprintf(fout, ";D:\t,\n"); return yytext[0];}
+"="					{col+=yyleng; fprintf(fout, ";D:\t=\n"); return yytext[0];}
+"("					{col+=yyleng; fprintf(fout, ";D:\t(\n"); return yytext[0];}
+")"					{col+=yyleng; fprintf(fout, ";D:\t)\n"); return yytext[0];}
+"{"					{col+=yyleng; fprintf(fout, ";D:\t{\n"); return yytext[0];}
+"}"					{col+=yyleng; fprintf(fout, ";D:\t}\n"); return yytext[0];}
+"["					{col+=yyleng; fprintf(fout, ";D:\t[\n"); return yytext[0];}
+"]"					{col+=yyleng; fprintf(fout, ";D:\t]\n"); return yytext[0];}
+":"					{col+=yyleng; fprintf(fout, ";D:\t:\n"); return yytext[0];}
+"+"					{col+=yyleng; fprintf(fout, ";D:\t+\n"); return yytext[0];}
+"-"					{col+=yyleng; fprintf(fout, ";D:\t-\n"); return yytext[0];}
+"/"					{col+=yyleng; fprintf(fout, ";D:\t/\n"); return yytext[0];}
+"*"					{col+=yyleng; fprintf(fout, ";D:\t*\n"); return yytext[0];}
+">"					{col+=yyleng; fprintf(fout, ";D:\t>\n"); return yytext[0];}
+"<"					{col+=yyleng; fprintf(fout, ";D:\t<\n"); return yytext[0];}
+"&"					{col+=yyleng; fprintf(fout, ";D:\t&\n"); return yytext[0];}
+"!"					{col+=yyleng; fprintf(fout, ";D:\t!\n"); return yytext[0];}
+"."					{col+=yyleng; fprintf(fout, ";D:\t.\n"); return yytext[0];}
 [ \t\r]				{col += yyleng;}
 {ENTERO}			{col+=yyleng; fprintf(fout, ";D:\t%s\n", yytext); return TOK_CONSTANTE_ENTERA;}
 {COMENTARIO}|"\n"	{col = 0; line++;}
@@ -69,6 +71,8 @@ return      {col+=yyleng; fprintf(fout, ";D:\t%s\n", yytext); return TOK_RETURN;
 						}
 					}
 .					{col+=yyleng;
-						fprintf(stdout, "ERROR MORFOLOGICO:%d:%d:CARACTER INVALIDO (%s)\n", line, col, yytext);
+						fprintf(stdout, "****Error en [lin %d, col %d]: simbolo no permitido (%s)\n", line, col, yytext);
 						return TOK_ERROR;}
+
+
 %%
