@@ -20,12 +20,12 @@ INFO_SIMBOLO* crear_info_simbolo(const char *lexema, CATEGORIA categ, TIPO tipo,
     INFO_SIMBOLO *simb;
 
     simb = (INFO_SIMBOLO*)calloc(1, sizeof(INFO_SIMBOLO));
-    if(simb == NULL){
+    if(simb == NULL || lexema == NULL){
         printf("Error al crear simbolo.\n");
         return NULL;
     }
 
-    strcpy(simb->lexema, lexema);
+    simb->lexema = strdup(lexema);
     simb->categoria = categ;
     simb->tipo = tipo;
     simb->clase = clase;
@@ -78,12 +78,18 @@ TABLA_HASH *crear_tabla(int tam){
 
     tabla->tam = tam;
     tabla->tabla = (NODO_HASH**)calloc(tam, sizeof(NODO_HASH*));
+    if(tabla->tabla==NULL){
+        printf("Error al crear la nueva tabla.");
+        free(tabla);
+        return NULL;
+    }
 
     return tabla;
 }
 
 /*******************************************/
 void liberar_tabla(TABLA_HASH *th){
+    /* TODO liberar DE VERDAD */
     free(th->tabla);
     free(th);
 
@@ -100,8 +106,8 @@ unsigned long hash(const char *str){
         return ERR;
     }
 
-    strcpy(temp, str);
-    hash = HASH_INI + HASH_FACTOR * temp[0];
+
+    hash = HASH_INI + HASH_FACTOR * str[0];
     return hash;
 }
 
@@ -113,7 +119,14 @@ INFO_SIMBOLO *buscar_simbolo(const TABLA_HASH *th, const char *lexema){
     pos = hash(lexema) % th->tam;
     temp = th->tabla[pos];
 
+    if (temp == NULL) {
+        return NULL;
+    }
+
     while(strcmp(temp->info->lexema, lexema)){
+        if(temp->siguiente == NULL){
+            return NULL;
+        }
         temp = temp->siguiente;
     }
 
@@ -132,7 +145,12 @@ STATUS insertar_simbolo(TABLA_HASH *th, const char *lexema, CATEGORIA categ, TIP
         return ERR;
     }
 
-    newInfo = crear_info_simbolo(lexema,categ, tipo,clase, adic1, adic2);
+    /* Miramos que no exista ya el simbolo a insertar */
+    if(buscar_simbolo(th, lexema)!=NULL){
+        return ERR;
+    }
+
+    newInfo = crear_info_simbolo(lexema, categ, tipo, clase, adic1, adic2);
     if(newInfo == NULL) return ERR;
 
     newNodo = crear_nodo(newInfo);
