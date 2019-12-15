@@ -7,6 +7,11 @@
 
 %}
 
+%union
+{
+    tipo_atributos atributos
+}
+
 %token TOK_MAIN
 %token TOK_INT
 %token TOK_BOOLEAN
@@ -18,6 +23,9 @@
 %token TOK_SCANF
 %token TOK_PRINTF
 %token TOK_RETURN
+
+/* IDENTIFICADOR */
+%token <atributos> TOK_IDENTIFICADOR 
 
 %token TOK_PUNTOYCOMA
 %token TOK_COMA
@@ -46,7 +54,9 @@
 %token TOK_IDENTIFICADOR
 
 
+
 /* CONSTANTES */
+%token <atributos> TOK_CONSTANTE_ENTERA
 %token TOK_CONSTANTE_ENTERA
 %token TOK_FALSE
 %token TOK_TRUE
@@ -54,6 +64,34 @@
 
 /* ERRORES */
 %token TOK_ERROR
+
+
+%type <atributos> tipo
+%type <atributos> comparacion
+%type <atributos> constante
+%type <atributos> clase_escalar
+%type <atributos> clase_vector
+%type <atributos> condicional
+%type <atributos> if_exp_sentencias
+%type <atributos> if_exp
+%type <atributos> exp
+%type <atributos> asignacion
+%type <atributos> elemento_vector
+%type <atributos> constante_logica
+%type <atributos> constante_entera
+%type <atributos> parametros_funcion
+%type <atributos> funcion
+%type <atributos> resto_parametros_funcion
+%type <atributos> lista_expresiones
+%type <atributos> resto_lista_expresiones
+%type <atributos> fn_name
+%type <atributos> idpf
+%type <atributos> fn_complete_name
+%type <atributos> tipo_retorno
+%type <atributos> sentencia_simple
+%type <atributos> retorno_funcion
+%type <atributos> fn_declaration
+
 
 %start programa
 %left '+' '-' TOK_OR
