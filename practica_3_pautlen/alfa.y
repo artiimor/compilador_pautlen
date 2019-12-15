@@ -108,13 +108,13 @@ declaraciones: declaracion {fprintf(fout, ";R2:\t<declaraciones> ::= <declaracio
 
 declaracion: clase identificadores ';' {fprintf(fout, ";R4:\t<declaracion> ::= <clase> <identificadores> ;\n");};
 
-clase: clase_escalar {fprintf(fout, ";R5:\t<clase> ::= <clase_escalar>\n");}
-		| clase_vector {fprintf(fout, ";R7:\t<clase> ::= <clase_vector>\n");};
+clase: clase_escalar {fprintf(fout, ";R5:\t<clase> ::= <clase_escalar>\n"); clase_actual = ESCALAR;}
+		| clase_vector {fprintf(fout, ";R7:\t<clase> ::= <clase_vector>\n"); clase_actual = VECTOR;};
 
 clase_escalar: tipo {fprintf(fout, ";R9:\t<clase_escalar> ::= <tipo>\n");};
 
-tipo: TOK_INT {fprintf(fout, ";R10:\t<tipo> ::= int\n");}
-        | TOK_BOOLEAN {fprintf(fout, ";R11:\t<tipo> ::= boolean\n");};
+tipo: TOK_INT {fprintf(fout, ";R10:\t<tipo> ::= int\n"); tipo_actual = INT;}
+        | TOK_BOOLEAN {fprintf(fout, ";R11:\t<tipo> ::= boolean\n"); tipo_actual = BOOLEAN;};
 
 clase_vector: TOK_ARRAY tipo '[' TOK_CONSTANTE_ENTERA ']' {fprintf(fout, ";R15:\t<clase_vector>: array <tipo> [ <constante_entera> ]");};
 
