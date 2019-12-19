@@ -123,12 +123,18 @@ declaracion: clase identificadores ';'
 					fprintf(fout, ";R4:\t<declaracion> ::= <clase> <identificadores> ;\n");
 				};
 
+/*
+	REGLAS 5 y 7
+*/
+
 clase: clase_escalar 
 				{
+					clase_actual = ESCALAR;
 					fprintf(fout, ";R5:\t<clase> ::= <clase_escalar>\n"); clase_actual = ESCALAR;
 				}
 		| clase_vector 
 				{
+					clase_actual = VECTOR;
 					fprintf(fout, ";R7:\t<clase> ::= <clase_vector>\n"); clase_actual = VECTOR;
 				};
 
@@ -137,17 +143,38 @@ clase_escalar: tipo
 					fprintf(fout, ";R9:\t<clase_escalar> ::= <tipo>\n");
 				};
 
+/*
+	REGLAS 10 y 11
+*/
 tipo: TOK_INT 
 				{
+					tipo_actual = INT;
 					fprintf(fout, ";R10:\t<tipo> ::= int\n"); tipo_actual = INT;
 				}
         | TOK_BOOLEAN 
 				{
+					tipo_actual = BOOLEAN;
 					fprintf(fout, ";R11:\t<tipo> ::= boolean\n"); tipo_actual = BOOLEAN;
 				};
 
+
+/*
+	REGLA 15
+*/
+
 clase_vector: TOK_ARRAY tipo '[' TOK_CONSTANTE_ENTERA ']' 
 				{
+					tamanio_vector_actual = $4.valor_entero;
+					if  ((tamanio_vector_actual < 1 )
+					{
+						yyerror("El vector tiene un tamano menor que 1.\n")
+						return -1;
+					}
+					else if(tamanio_vector_actual > MAX_TAMANIO_VECTOR 1))
+					{
+						yyerror("El vector tiene un tamano mayor que el permitido.\n")
+						return -1;
+					}
 					fprintf(fout, ";R15:\t<clase_vector>: array <tipo> [ <constante_entera> ]");
 				};
 
