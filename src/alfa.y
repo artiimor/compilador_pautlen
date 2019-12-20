@@ -5,6 +5,12 @@
 	extern int col;
 	extern FILE* fout;
 
+	int pos_parametro_actual = 0;
+	int num_parametros_actual = 0;
+	int num_variables_locales_actual = 0;
+	int pos_variable_local_actual = 0;
+
+
 %}
 
 %union
@@ -100,7 +106,7 @@
 
 %%
 
-programa: 	TOK_MAIN '{' declaraciones funciones sentencias '}' 
+programa: inicioTabla	TOK_MAIN '{' declaraciones funciones sentencias '}' 
 				{
 				fprintf(fout, ";R1:\t<programa> ::=	main { <declaraciones> <funciones> <sentencias> }\n");
 				}
@@ -108,6 +114,12 @@ programa: 	TOK_MAIN '{' declaraciones funciones sentencias '}'
 				{
 				fprintf(fout, ";R1:\tprograma: main { <funciones> <sentencias> }\n");
 				};
+
+inicioTabla:
+				{
+          /* Acciones de inicialización de la tabla de símbolos */
+          TGLOBAL = newHashTable();       // Tabla hash que almacena los símbolos de ámbito global
+        }
 
 declaraciones: declaracion 
 				{
@@ -167,12 +179,12 @@ clase_vector: TOK_ARRAY tipo '[' TOK_CONSTANTE_ENTERA ']'
 					tamanio_vector_actual = $4.valor_entero;
 					if  ((tamanio_vector_actual < 1 )
 					{
-						yyerror("El vector tiene un tamano menor que 1.\n")
+						yyerror("El vector tiene un tamano menor que 1.\n");
 						return -1;
 					}
 					else if(tamanio_vector_actual > MAX_TAMANIO_VECTOR 1))
 					{
-						yyerror("El vector tiene un tamano mayor que el permitido.\n")
+						yyerror("El vector tiene un tamano mayor que el permitido.\n");
 						return -1;
 					}
 					fprintf(fout, ";R15:\t<clase_vector>: array <tipo> [ <constante_entera> ]");
@@ -195,6 +207,35 @@ funciones: /*vacio*/
 				{
 					fprintf(fout, ";R20:\t<funciones>: <funcion> <funciones>\n");
 				};
+
+/*
+	REGLA 22
+*/
+
+fn_name : TOK_FUNCTION tipo TOK_IDENTIFICADOR 
+				{
+  				//ERROR SI YA SE HA DECLARADO UNA FUNCION CON NOMBRE $3.nombre
+					if (buscar_simbolo(TGLOBAL, $3.nombre) != NULL)
+					{
+						yyerror("El identificador %s ha sido declarado dos veces.\n",$3.nombre);
+						return -1;
+					}
+  				simbolo.identificador = $3.nombre;
+  				simbolo.cat_simbolo = FUNCION;
+  				simbolo.tipo = tipo_actual;
+  				$$.tipo = tipo_actual;
+  				strcpy($$.nombre, $3.nombre);
+
+  				//ABRIR AMBITO EN LA TABLA DE SIMBOLOS CON IDENTIFICADOR $3.nombre
+					// TODO supongo adicionales como 0
+					insertar_simbolo(TGLOBAL, $3.nombre, FUNCION, tipo_actual, clase_actual, 0, 0);
+
+  				//RESETEAR VARIABLES QUE NECESITAMOS PARA PROCESAR LA FUNCION:
+					num_variables_locales_actual = 0;
+					pos_variable_local_actual = 1;
+					num_parametros_actual = 0;
+					pos_parametro_actual = 0;
+				}
 
 funcion: TOK_FUNCTION tipo identificador '(' parametros_funcion ')' '{' declaraciones_funcion sentencias '}'
 				{
@@ -219,8 +260,35 @@ resto_parametros_funcion:	';' parametro_funcion resto_parametros_funcion
 					fprintf(fout, ";R26:\t<resto_parametros_funcion> ::= \n");
 				};
 
-parametro_funcion:	tipo identificador 
+
+/*
+	REGLA 27
+*/
+
+idpf : TOK_IDENTIFICADOR 
 				{
+					// COMPROBACIONES SEMANTICAS PARA $1.nombre
+					if (buscar_simbolo(TGLOBAL, $1.nombre) != NULL)
+					{
+						yyerror("El identificador %s ha sido declarado dos veces.\n",$1.nombre);
+						return -1;
+					}
+    			simbolo.identificador = $1.nombre;
+    			simbolo.cat_simbolo = PARAMETRO;
+    			simbolo.tipo = tipo_actual;
+    			simbolo.categoria = ESCALAR;
+    			simbolo.posicion = posicion_paremetro;
+    			// DECLARAR SIMBOLO EN LA TABLA
+					// Categoria = FUNCION. El tipo y clase los actuales
+					insertar_simbolo(TGLOBAL, $1.nombre, FUNCION, tipo_actual, clase_actual, num_parametros_actual, pos_parametro_actual);
+				};
+
+parametro_funcion:	tipo idpf 
+				{
+					// Incrementamos contadores
+					num_parametros_actual++;
+					pos_parametro_actual++;
+					// Imprimimos la regla
 					fprintf(fout, ";R27:\t<parametro_funcion> ::= <tipo> <identificador>\n");
 				};
 
