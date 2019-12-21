@@ -523,10 +523,10 @@ lectura: TOK_SCANF identificador
 						return -1;
 					}
 
-					// Si la clase es un vector
-					if (simbolo->clase == VECTOR)
+					// Si la clase no es escalar
+					if (simbolo->clase != escalar)
 					{
-						errorSemantico("[ERROR] intento de scan a un vector.\n");
+						errorSemantico("[ERROR] intento de scan a un no escalar.\n");
 						return -1;
 					}
 
@@ -546,6 +546,9 @@ lectura: TOK_SCANF identificador
 
 escritura:	TOK_PRINTF exp 
 				{
+					// GENERACION
+					escribir(output, $2.es_direccion, $2.tipo);
+
 					fprintf(fout, ";R56:\t<escritura> ::= printf <exp>\n");
 				};
 
