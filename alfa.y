@@ -5,10 +5,15 @@
 	extern int col;
 	extern FILE* fout;
 
-	int pos_parametro_actual = 0;
-	int num_parametros_actual = 0;
-	int num_variables_locales_actual = 0;
-	int pos_variable_local_actual = 0;
+	HASH_TABLE *TGLOBAL;
+	HASH_TABLE *TLOCAL;
+
+	int pos_parametro_actual = 0; // Indica en que parametro estamos
+	int num_parametros_actual = 0; // Contador del numero de parametros
+	int num_variables_locales_actual = 0; // contador de varibles locales
+	int pos_variable_local_actual = 0; // Indica en que variable local estamos
+	int hayReturn = 0; // Indica si la funcion tiene return para cde
+	int tipoReturn;
 
 
 %}
@@ -118,7 +123,7 @@ programa: inicioTabla	TOK_MAIN '{' declaraciones funciones sentencias '}'
 inicioTabla:
 				{
           /* Acciones de inicialización de la tabla de símbolos */
-          TGLOBAL = newHashTable();       // Tabla hash que almacena los símbolos de ámbito global
+          TGLOBAL = crear_tabla(100);       // Tabla hash que almacena los símbolos de ámbito global
         }
 
 declaraciones: declaracion 
@@ -212,6 +217,46 @@ funciones: /*vacio*/
 	REGLA 22
 */
 
+funcion: fn_declaration sentencias TOK_LLAVEDERECHA 
+				{
+				  //COMPROBACIONES SEMANTICAS
+				  //ERROR SI LA FUNCION NO TIENE SENTENCIA DE RETORNO
+					if (hayReturn == 0)
+					{
+						yyerror("ERROR, la funcion no tiene sentencia de retorno\n");
+						return -1;
+					}
+					if ($$.tipo != $3.tipo)
+					{
+						yyerror("ERROR, el tipo de la funcion no coincide\n");
+						return -1;
+					}
+				  //ERROR SI YA SE HA DECLARADO UNA FUNCION CON NOMBRE $1.nombre
+					if (buscar_simbolo(TGLOBAL, $3.nombre) != NULL)
+					{
+						yyerror("La funcion %s ha sido declarada dos veces.\n",$1.nombre);
+						return -1;
+					}
+				  //CIERRE DE AMBITO, ETC
+				  simbolo->num_parametros = num_parametros;
+				};
+
+fn_declaration : fn_name TOK_PARENTESISIZQUIERDO parametros_funcion TOK_PARENTESISDERECHO TOK_LLAVEIZQUIERDA declaraciones_funcion 
+				{
+				  //COMPROBACIONES SEMANTICAS
+				  //ERROR SI YA SE HA DECLARADO UNA FUNCION CON NOMBRE $1.nombre
+					if (buscar_simbolo(TGLOBAL, $1.nombre) != NULL)
+					{
+						yyerror("La funcion %s ha sido declarada dos veces.\n",$1.nombre);
+						return -1;
+					}
+				  simbolo->num_parametros = num_parametros;
+				  strcpy($$.nombre, $1.nombre);
+				  $$.tipo = $1.tipo;
+				  //GENERACION DE CODIGO
+				  declararFuncion(out, $1.nombre, num_variables_locales_actual);
+				} 
+
 fn_name : TOK_FUNCTION tipo TOK_IDENTIFICADOR 
 				{
   				//ERROR SI YA SE HA DECLARADO UNA FUNCION CON NOMBRE $3.nombre
@@ -258,6 +303,13 @@ resto_parametros_funcion:	';' parametro_funcion resto_parametros_funcion
 		| /*vacio*/ 
 				{
 					fprintf(fout, ";R26:\t<resto_parametros_funcion> ::= \n");
+				};
+
+parametro_funcion: tipo idpf 
+				{
+				  //INCREMENTAR CONTADORES, POR EJEMPLO
+				  num_parametros++;
+				  pos_parametro_actual++;
 				};
 
 
@@ -345,8 +397,13 @@ bloque:	condicional
 					fprintf(fout, ";R41:\t<bloque> ::= <bucle>\n");
 				};
 
+/*
+	REGLAS 43 y 44
+*/
+
 asignacion:	identificador '=' exp 
 				{
+					
 					fprintf(fout, ";R43:\t<asigancion> ::= <identificador> = <exp>\n");
 				}
             | elemento_vector '=' exp 
@@ -562,4 +619,10 @@ identificador: TOK_IDENTIFICADOR
 
 void yyerror(char* s) {
 	fprintf(stdout,"****Error sintactico en [lin %d, col %d]\n", line, col);
+}
+
+
+void errorSemantico (char *msg)
+{
+  fprintf(stderr,"****Error semantico en lin %d: %s\n", yylineno, msg);
 }
