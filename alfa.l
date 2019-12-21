@@ -1,6 +1,11 @@
 %{
 #include <stdlib.h>
 #include <stdio.h>
+
+#include "alfa.h"
+#include "tablahash.h"
+#include "generacion.h"
+
 #include "y.tab.h"
 
 int line = 1;
@@ -21,7 +26,7 @@ IDENTIFICADOR 	{LETRA}({LETRA}|{DIGITO})*
 function			{col+=yyleng; fprintf(fout, ";D:\t%s\n", yytext); return TOK_FUNCTION;}
 return				{col+=yyleng; fprintf(fout, ";D:\t%s\n", yytext); return TOK_RETURN;}
 main				{col+=yyleng; fprintf(fout, ";D:\t%s\n", yytext); return TOK_MAIN;}
-boolean				{col+=yyleng; fprintf(fout, ";D:\t%s\n", yytext); return TOK_BOOLEAN;}
+boolean				{col+=yyleng; fprintf(fout, ";D:\t%s\n", yytext); return TOK_BOOLEANO;}
 array				{col+=yyleng; fprintf(fout, ";D:\t%s\n", yytext); return TOK_ARRAY;}
 printf				{col+=yyleng; fprintf(fout, ";D:\t%s\n", yytext); return TOK_PRINTF;}
 int					{col+=yyleng; fprintf(fout, ";D:\t%s\n", yytext); return TOK_INT;}
