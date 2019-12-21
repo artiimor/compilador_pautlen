@@ -403,7 +403,44 @@ bloque:	condicional
 
 asignacion:	identificador '=' exp 
 				{
+					INFO_SIMBOLO simbolo;
+
+					/**************************************/
+					/*************AMBITO LOCAL*************/
+					/**************************************/
+					simbolo = buscar_simbolo(TLOCAL, $1.lexema);
+					if (simbolo != NULL)
+					{
+						if (simbolo->categoria == FUNCION)
+						{
+							errorSemantico("$1.lexema es una funcion. No le puedes asignar.\n");
+							return -1;
+						}
+						if (simbolo->clase == VECTOR)
+						{
+							errorSemantico("$1.lexema es un vector. No le puedes asignar.\n");
+							return -1;
+						}
+						if (simbolo->tipo != $3.tipo)
+						{
+							errorSemantico($1.lexema y $3.lexema no son compatibles.\n);
+							return -1;
+						}
+
+						//
+					}
 					
+					/**************************************/
+					/*************AMBITO GLOBAL************/
+					/**************************************/
+					simbolo = buscar_simbolo(TGLOBAL, $1.lexema);
+
+					if (simbolo == NULL)
+					{
+						errorSemantico ("$1.lexema no ha sido declarado antes.\n");
+						return -1;
+					}
+					// TODO comprobaciones del ambito
 					fprintf(fout, ";R43:\t<asigancion> ::= <identificador> = <exp>\n");
 				}
             | elemento_vector '=' exp 

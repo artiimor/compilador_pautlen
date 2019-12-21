@@ -3,199 +3,109 @@
 #include <string.h>
 #include "tablasimbolos.h"
 
-/************* CONSTANTES **************/
+TablaSimbolos *ts = NULL;
 
-/* posicion inicial de parametros de funcion (empiezan a contar en 0) */
-#define POS_INI_PARAMS 0
-/* posicion de inicio de variables locales de funcion (empieza a contar en 0) */
-#define POS_INI_VARS_LOCALES 1
-
-#define HASH_INI 5381
-#define HASH_FACTOR 33
-
-/***********************************/
-/********** FUNCIONES *************/
-/**********************************/
-INFO_SIMBOLO* crear_info_simbolo(const char *lexema, CATEGORIA categ, TIPO tipo, CLASE clase, int adic1, int adic2){
-    INFO_SIMBOLO *simb;
-
-    simb = (INFO_SIMBOLO*)calloc(1, sizeof(INFO_SIMBOLO));
-    if(simb == NULL || lexema == NULL){
-        printf("Error al crear simbolo.\n");
+void *crearAmbitoGlobal()
+{
+    TablaSimbolos *p_tabla = NULL;
+    p_tabla = (TablaSimbolos *)calloc(1, sizeof(TablaSimbolos));
+    if (!p_tabla)
+        return NULL;
+    p_tabla->contexto_global = crear_tabla(TH_SIZE);
+    if (!p_tabla->contexto_global)
+    {
+        free(p_tabla);
         return NULL;
     }
-
-    simb->lexema = strdup(lexema);
-    simb->categoria = categ;
-    simb->tipo = tipo;
-    simb->clase = clase;
-    simb->adicional1 = adic1;
-    simb->adicional2 = adic2;
-
-    return simb;
+    p_tabla->contexto_local = NULL;
+    ts = p_tabla;
 }
 
-/*******************************************/
-void liberar_info_simbolo(INFO_SIMBOLO *is){
-    free(is);
-
-    return;
+void cerrarAmbitos()
+{
+    if (!ts)
+        return;
+    liberar_tabla(ts->contexto_global);
+    if (!ts->contexto_local)
+        liberar_tabla(ts->contexto_local);
+    free(ts);
 }
 
-/*******************************************/
-NODO_HASH* crear_nodo(INFO_SIMBOLO *is){
-    NODO_HASH *nodo;
-
-    nodo = (NODO_HASH*)calloc(1, sizeof(NODO_HASH));
-    if(nodo == NULL){
-        printf("Error al crear nuevo nodo.\n");
-        return NULL;
-    }
-
-    nodo->info = is;
-    nodo->siguiente = NULL;
-
-    return nodo;
-}
-
-/*******************************************/
-void liberar_nodo(NODO_HASH *nh){
-    liberar_info_simbolo(nh->info);
-    free(nh);
-
-    return ;
-}
-
-/*******************************************/
-TABLA_HASH *crear_tabla(int tam){
-    TABLA_HASH *tabla;
-
-    tabla = (TABLA_HASH*)calloc(1, sizeof(TABLA_HASH));
-    if(tabla == NULL){
-        printf("Error al crear la nueva tabla.\n");
-        return NULL;
-    }
-
-    tabla->tam = tam;
-    tabla->tabla = (NODO_HASH**)calloc(tam, sizeof(NODO_HASH*));
-    if(tabla->tabla==NULL){
-        printf("Error al crear la nueva tabla.");
-        free(tabla);
-        return NULL;
-    }
-
-    return tabla;
-}
-
-/*******************************************/
-void liberar_tabla(TABLA_HASH *th){
-    /* TODO liberar DE VERDAD */
-    free(th->tabla);
-    free(th);
-
-    return ;
-}
-
-/*******************************************/
-unsigned long hash(const char *str){
-    unsigned long hash;
-    char *temp;
-
-    if(str == NULL){
-        printf("Error al calcular el hash.\n");
+STATUS insertarSimbolo(const char *lexema, INFO_SIMBOLO *info)
+{
+    TABLA_HASH *tabla_hash = NULL;
+    if (!ts || !info)
+    {
         return ERR;
     }
 
-
-    hash = HASH_INI + HASH_FACTOR * str[0];
-    return hash;
+    if (ts->contexto_local)
+        tabla_hash = ts->contexto_local;
+    else
+        tabla_hash = ts->contexto_global;
+    return insertar_simbolo(tabla_hash, info->lexema, info->categoria, info->tipo, info->clase, info->adicional1, info->adicional2);
 }
 
-/*******************************************/
-INFO_SIMBOLO *buscar_simbolo(const TABLA_HASH *th, const char *lexema){
-    int pos;
-    NODO_HASH *temp;
-
-    pos = hash(lexema) % th->tam;
-    temp = th->tabla[pos];
-
-    if (temp == NULL) {
-        return NULL;
-    }
-
-    while(strcmp(temp->info->lexema, lexema)){
-        if(temp->siguiente == NULL){
-            return NULL;
+INFO_SIMBOLO *buscarSimbolo(const char *lexema)
+{
+    INFO_SIMBOLO *ret = NULL;
+    if (!ts || !lexema)
+        return ERR;
+    if (ts->contexto_local)
+    {
+        ret = buscar_simbolo(ts->contexto_local, lexema);
+        if (ret)
+        {
+            return ret;
         }
-        temp = temp->siguiente;
     }
-
-    return temp->info;
+    return buscar_simbolo(ts->contexto_global, lexema);
 }
 
-/*******************************************/
-STATUS insertar_simbolo(TABLA_HASH *th, const char *lexema, CATEGORIA categ, TIPO tipo, CLASE clase, int adic1, int adic2){
-    int pos;
-    INFO_SIMBOLO *newInfo;
-    NODO_HASH *newNodo;
-    NODO_HASH *temp;
-
-    if(th == NULL){
-        printf("Error al insertar el simbolo.\n");
+STATUS crearAmbitoLocal(const char *lexema, INFO_SIMBOLO *info)
+{
+    if (!ts || !info)
+    {
         return ERR;
     }
 
-    /* Miramos que no exista ya el simbolo a insertar */
-    if(buscar_simbolo(th, lexema)!=NULL){
+    if (ts->contexto_local)
+    {
         return ERR;
     }
 
-    newInfo = crear_info_simbolo(lexema, categ, tipo, clase, adic1, adic2);
-    if(newInfo == NULL) return ERR;
-
-    newNodo = crear_nodo(newInfo);
-    if(newNodo == NULL) return ERR;
-
-    pos = hash(lexema) % th->tam;
-
-    if(th->tabla[pos] == NULL){
-        th->tabla[pos] = newNodo;
-    }else {
-        temp = th->tabla[pos];
-        while(temp->siguiente != NULL){
-            temp = temp->siguiente;
-        }
-        temp->siguiente = newNodo;
+    ts->contexto_local = crear_tabla(TH_SIZE);
+    if (!ts->contexto_local)
+    {
+        return ERR;
     }
+    if (insertar_simbolo(ts->contexto_global, info->lexema, info->categoria, info->tipo, info->clase, info->adicional1, info->adicional2) == ERR)
+    {
+        liberar_tabla(ts->contexto_local);
+        ts->contexto_local = NULL;
+        return ERR;
+    }
+    if (insertar_simbolo(ts->contexto_local, info->lexema, info->categoria, info->tipo, info->clase, info->adicional1, info->adicional2) == ERR)
+    {
+        liberar_tabla(ts->contexto_local);
+        ts->contexto_local = NULL;
+        return ERR;
+    }
+
     return OK;
 }
 
-/*******************************************/
-void borrar_simbolo(TABLA_HASH *th, const char *lexema){
-    int pos, location, i;
-    NODO_HASH *objetivo;
-    NODO_HASH *temp;
-
-    if(th == NULL || lexema == NULL){
-        printf("Error al borrar simbolo\n");
-        return ;
+STATUS cerrarAmbitoLocal()
+{
+    if (!ts)
+    {
+        return ERR;
     }
-
-    pos = hash(lexema) % th->tam;
-    objetivo = th->tabla[pos];
-    temp = th->tabla[pos];
-
-    location = 0;
-    while(strcmp(lexema, objetivo->info->lexema)){
-        objetivo = objetivo->siguiente;
-        location++;
+    if (!ts->contexto_local)
+    {
+        return ERR;
     }
-    for(i=0; i<location; i++){
-        temp = temp->siguiente;
-    }
-
-    temp->siguiente = objetivo->siguiente;
-    free(objetivo);
-
-    return ;
+    liberar_tabla(ts->contexto_local);
+    ts->contexto_local = NULL;
+    return OK;
 }
