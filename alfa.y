@@ -12,6 +12,7 @@
 	int hayReturn = 0; // Indica si la funcion tiene return para cde
 	int tipoReturn;
 	int cuantos = 0;//esta variable es un contador para generar saltos unicos
+	int num_parametros_llamada_actual = 0;
 
 
 %}
@@ -174,17 +175,20 @@ tipo: TOK_INT
 
 clase_vector: TOK_ARRAY tipo '[' TOK_CONSTANTE_ENTERA ']' 
 				{
-					tamanio_vector_actual = $4.valor_entero;
-					if  ((tamanio_vector_actual < 1 )
+					
+					if  (($4.valor_entero < 1 )
 					{
 						yyerror("El vector tiene un tamano menor que 1.\n");
 						return -1;
 					}
-					else if(tamanio_vector_actual > MAX_TAMANIO_VECTOR 1))
+					else if($4.valor_entero > MAX_TAMANIO_VECTOR 1))
 					{
 						yyerror("El vector tiene un tamano mayor que el permitido.\n");
 						return -1;
 					}
+
+					tamanio_vector_actual = $4.valor_entero;
+
 					fprintf(fout, ";R15:\t<clase_vector>: array <tipo> [ <constante_entera> ]");
 				};
 
@@ -475,6 +479,10 @@ elemento_vector: identificador '[' exp ']'
 
 					printf("PENDIENTE.\n");
 
+					// SINTESIS
+					strcpy($$.lexema, $1.lexema);
+					$$.tipo = info->tipo;
+
 					fprintf(fout, ";R48:\t<elemento_vector> ::= <identificador> [ <exp> ]\n");
 				};
 
@@ -726,27 +734,47 @@ exp: exp '+' exp
 				}
 		| constante 
 				{
+					//SINTESIS
+					$$.tipo = $1.tipo;
+					$$.es_direccion = $1.es_direccion;
+
 					fprintf(fout, ";R81:\t<exp> ::= <constante> \n");
 				}
 		| '(' exp ')' 
 				{
+					// SINTESIS
+					$$.tipo = $2.tipo;
+					$$.es_direccion = $2.es_direccion;
+
 					fprintf(fout, ";R82:\t<exp> ::= ( <exp> )\n");
 				}
 		| '(' comparacion ')' 
 				{
+					// SINTESIS
+					$$.tipo = $2.tipo;
+					$$.es_direccion = $2.es_direccion;
+
 					fprintf(fout, ";R83:\t<exp> ::= ( <comparacion> )\n");
 				}
 		| elemento_vector 
 				{
+					// SINTESIS 
+					$$.tipo = $1.tipo;
+					$$.es_direccion = $1.es_direccion;
+
 					fprintf(fout, ";R85:\t<exp> ::= <elemento_vector>\n");
 				}
 		| identificador '(' lista_expresiones ')' 
 				{
+					printf("PENDIENTE\n");
 					fprintf(fout, ";R88:\t<exp> ::= <identificador> ( <lista_expresiones> )\n");
 				};
 
 lista_expresiones: exp resto_lista_expresiones 
 				{
+					 // SINTESIS
+					num_parametros_llamada_actual++;
+
 					fprintf(fout, ";R89:\t<lista_expresiones> ::= <exp> <resto_lista_expresiones> \n");
 				}
 		| /*vacio*/ 
@@ -756,6 +784,9 @@ lista_expresiones: exp resto_lista_expresiones
 
 resto_lista_expresiones: ',' exp resto_lista_expresiones 
 				{
+					// SINTESIS
+					num_parametros_llamada_actual++;
+
 					fprintf(fout, ";R91:\t<resto_lista_expresiones> ::= , <exp> <resto_lista_expresiones> \n");
 				}
 		| /*vacio*/ 
@@ -883,24 +914,56 @@ comparacion: exp TOK_IGUAL exp
 
 constante: constante_logica 
 				{
+					// SINTESIS
+					$$.tipo = $1.tipo;
+					$$.es_direccion = $1.es_direccion;
+
 					fprintf(fout, ";R99:\t<constante> ::= <constante_logica> \n");
 				}
 		| constante_entera 
 				{
+					// SINTESIS
+					$$.tipo = $1.tipo;
+					$$.es_direccion = $1.es_direccion;
+
 					fprintf(fout, ";R100:\t<constante> ::= <constante_entera> \n");
 				};
 
 constante_logica: TOK_TRUE 
 				{
+					// SINTESIS
+					$$.tipo = BOOLEANO;
+					$$.es_direccion = FALSE;
+					$$.valor_entero = TRUE;
+
+					// GENERACION
+					escribir_operando(output, "1", 0);
+
 					fprintf(fout, ";R102:\t<constante_logica> ::= true \n");
 				}
         | TOK_FALSE 
 				{
+					// SINTESIS
+					$$.tipo = BOOLEANO;
+					$$.es_direccion = FALSE;
+					$$.valor_entero = TRUE;
+
+					// GENERACION
+					escribir_operando(output, "0", 0);
+
 					fprintf(fout, ";R103:\t<constante_logica> ::= false \n");
 				};
 
 constante_entera: numero 
 				{
+					// SINTESIS
+					$$.tipo = ENTERO;
+					$$.es_direccion = FALSE;
+					$$.valor_entero = $1.valor_entero;
+
+					// GENERACION
+					escribir_operando(output, $1.lexema, 0);//en $1.lexema guardo la string del valor_entero 
+					
 					fprintf(fout, ";R104:\t<constante_entera> ::= <numero> \n");
 				};
 
