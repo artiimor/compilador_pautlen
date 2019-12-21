@@ -109,3 +109,19 @@ STATUS cerrarAmbitoLocal()
     ts->contexto_local = NULL;
     return OK;
 }
+
+int es_local (const char *lexema)
+{
+    INFO_SIMBOLO *ret = NULL;
+    if (!ts || !lexema)
+        return ERR;
+    if (ts->contexto_local)
+    {
+        ret = buscar_simbolo(ts->contexto_local, lexema);
+        if (ret)
+        {
+            return 1;
+        }
+    }
+    return 0;
+}

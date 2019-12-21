@@ -27,12 +27,14 @@ typedef struct info_simbolo{
     CATEGORIA categoria;    /* categoria */
     TIPO tipo;              /* tipo */
     CLASE clase;            /* clase */
+    
     /* 
      * Si es un escalar => su valor
      * Si es un vector => su longitud
      * Si es una funcion => numero de parametros.
      */
     int adicional1;
+    
     /*
      * Si es un parametro => Posicion en la llamada a funcion
      * Si es una variable local => posicion de declaracion

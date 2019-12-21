@@ -5,9 +5,6 @@
 	extern int col;
 	extern FILE* fout;
 
-	HASH_TABLE *TGLOBAL;
-	HASH_TABLE *TLOCAL;
-
 	int pos_parametro_actual = 0; // Indica en que parametro estamos
 	int num_parametros_actual = 0; // Contador del numero de parametros
 	int num_variables_locales_actual = 0; // contador de varibles locales
@@ -111,7 +108,7 @@
 
 %%
 
-programa: inicioTabla	TOK_MAIN '{' declaraciones funciones sentencias '}' 
+programa: TOK_MAIN '{' declaraciones funciones sentencias '}' 
 				{
 				fprintf(fout, ";R1:\t<programa> ::=	main { <declaraciones> <funciones> <sentencias> }\n");
 				}
@@ -120,11 +117,6 @@ programa: inicioTabla	TOK_MAIN '{' declaraciones funciones sentencias '}'
 				fprintf(fout, ";R1:\tprograma: main { <funciones> <sentencias> }\n");
 				};
 
-inicioTabla:
-				{
-          /* Acciones de inicialización de la tabla de símbolos */
-          TGLOBAL = crear_tabla(100);       // Tabla hash que almacena los símbolos de ámbito global
-        }
 
 declaraciones: declaracion 
 				{
@@ -403,44 +395,43 @@ bloque:	condicional
 
 asignacion:	identificador '=' exp 
 				{
-					INFO_SIMBOLO simbolo;
+					INFO_SIMBOLO simbolo = buscarSimbolo($1.lexema);
 
-					/**************************************/
-					/*************AMBITO LOCAL*************/
-					/**************************************/
-					simbolo = buscar_simbolo(TLOCAL, $1.lexema);
-					if (simbolo != NULL)
-					{
-						if (simbolo->categoria == FUNCION)
-						{
-							errorSemantico("$1.lexema es una funcion. No le puedes asignar.\n");
-							return -1;
-						}
-						if (simbolo->clase == VECTOR)
-						{
-							errorSemantico("$1.lexema es un vector. No le puedes asignar.\n");
-							return -1;
-						}
-						if (simbolo->tipo != $3.tipo)
-						{
-							errorSemantico($1.lexema y $3.lexema no son compatibles.\n);
-							return -1;
-						}
-
-						//
-					}
-					
-					/**************************************/
-					/*************AMBITO GLOBAL************/
-					/**************************************/
-					simbolo = buscar_simbolo(TGLOBAL, $1.lexema);
-
+					// Comprobamos que el simbolo existe
 					if (simbolo == NULL)
 					{
-						errorSemantico ("$1.lexema no ha sido declarado antes.\n");
+						errorSemantico ("[ERROR] Acceso a variable no declarada.\n");
 						return -1;
 					}
-					// TODO comprobaciones del ambito
+					// Comprobamos que no es funcion
+					if (info->categoria == FUNCION)
+					{
+						errorSemantico ("[ERROR] Asignacion a funcion.\n");
+						return -1;
+					}
+					// Comprobamos que no es vector
+					if (info->clase == VECTOR)
+					{
+						errorSemantico ("[ERROR] Asignacion a vector.\n");
+						return -1;
+					}
+
+					if (simbolo->tipo != $3.tipo){
+						errorSemantico("[ERROR]. Los tipos no coinciden");
+					}
+
+					// Si la variable esta en el ambito local
+					if (ambito_local($1.lexema))
+					{
+						printf("PENDIENTE\n");
+					}
+					// Si la variable es global
+					else
+					{
+						printf("PENDIENTE\n");
+					}
+
+					// Por ultimo, imprimimos
 					fprintf(fout, ";R43:\t<asigancion> ::= <identificador> = <exp>\n");
 				}
             | elemento_vector '=' exp 
@@ -450,6 +441,39 @@ asignacion:	identificador '=' exp
 
 elemento_vector: identificador '[' exp ']' 
 				{
+					INFO_SIMBOLO simbolo = buscarSimbolo($1.lexema);
+
+					// Comprobamos que el simbolo existe
+					if (simbolo == NULL)
+					{
+						errorSemantico ("[ERROR] Acceso a variable no declarada.\n");
+						return -1;
+					}
+
+					// Comprobamos que no es funcion
+					if (info->categoria == FUNCION)
+					{
+						errorSemantico ("[ERROR] Asignacion a funcion.\n");
+						return -1;
+					}
+
+					//si el ambito es local y no es una variable global dentro de un ambito local
+					if(ambito_local($1.lexema) == 1  && !(info->adicional2 == -1 && info->adicional1 == -1))
+					{
+			 			errorSemantico("No estan permitidas las variables locales de tipo no escalar.");
+						return -1;
+					}
+					// Comprobamos que no es escalar
+					if (info->clase == ESCALAR)
+					{
+						errorSemantico ("[ERROR] Asignacion a un elemento que no es vector.\n");
+						return -1;
+					}
+
+					
+
+					printf("PENDIENTE.\n");
+
 					fprintf(fout, ";R48:\t<elemento_vector> ::= <identificador> [ <exp> ]\n");
 				};
 
@@ -467,8 +491,47 @@ bucle: TOK_WHILE '(' exp ')' '{' sentencias '}'
 					fprintf(fout, ";R52:\tbucle ::= while ( <exp> ) { <sentencias> }\n");
 				};
 
+
+/*
+	Regla 54
+*/
 lectura: TOK_SCANF identificador 
 				{
+
+					INFO_SIMBOLO simbolo = buscarSimbolo($2.lexema);
+
+					// Comprobamos que el simbolo existe
+					if (simbolo == NULL)
+					{
+						errorSemantico ("[ERROR] Acceso a variable no declarada.\n");
+						return -1;
+					}
+
+					// Si la categoria es una funcion
+					if (simbolo->categoria == FUNCION)
+					{
+						errorSemantico ("[ERROR] intento de scan a una funcion\n");
+						return -1;
+					}
+
+					// Si la clase es un vector
+					if (simbolo->clase == VECTOR)
+					{
+						errorSemantico("[ERROR] intento de scan a un vector.\n");
+						return -1;
+					}
+
+					if (es_local($2.lexema) == 1)
+					{
+						printf("PENDIENTE\n");
+					}
+
+					else
+					{
+						printf("PENDIENTE\n");
+					}
+
+
 					fprintf(fout, ";R54:\t<lectura> ::= scanf <identificador> \n");
 				};
 
@@ -517,6 +580,31 @@ exp: exp '+' exp
 				}
 		| identificador 
 				{
+					INFO_SIMBOLO simbolo = buscarSimbolo($1.lexema);
+
+					// Comprobamos que el simbolo existe
+					if (simbolo == NULL)
+					{
+						errorSemantico ("[ERROR] Acceso a variable no declarada.\n");
+						return -1;
+					}
+
+					// Si la categoria es una funcion
+					if (simbolo->categoria == FUNCION)
+					{
+						errorSemantico ("[ERROR] intento de scan a una funcion\n");
+						return -1;
+					}
+
+					// Si la clase es un vector
+					if (simbolo->clase == VECTOR)
+					{
+						errorSemantico("[ERROR] intento de scan a un vector.\n");
+						return -1;
+					}
+
+					printf("PENDIENTE\n");
+
 					fprintf(fout, ";R80:\t<exp> ::= <identificador>\n");
 				}
 		| constante 

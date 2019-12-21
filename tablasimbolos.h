@@ -22,5 +22,6 @@ STATUS insertarSimbolo(const char *lexema, INFO_SIMBOLO *info);
 INFO_SIMBOLO *buscarSimbolo(const char *lexema);
 STATUS crearAmbitoLocal(const char *lexema, INFO_SIMBOLO *info);
 STATUS cerrarAmbitoLocal();
+int es_local (const char *lexema);
 
 #endif
