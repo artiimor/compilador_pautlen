@@ -11,6 +11,7 @@
 	int pos_variable_local_actual = 0; // Indica en que variable local estamos
 	int hayReturn = 0; // Indica si la funcion tiene return para cde
 	int tipoReturn;
+	int cuantos = 0;//esta variable es un contador para generar saltos unicos
 
 
 %}
@@ -546,36 +547,152 @@ retorno_funcion: TOK_RETURN exp
 					fprintf(fout, ";R61:\t<retorno_funcion> ::= return<exp>\n");
 				};
 
+/*
+	OPERACIONES
+*/
 exp: exp '+' exp 
 				{
+					// El tipo tiene que ser entero.
+					if($1.tipo != ENTERO || $3.tipo != ENTERO)
+					{
+						errorSemantico("Operacion logica con operandos enteros.");
+						return -1;
+					}
+
+					// GENERACION DE CODIGO
+					sumar(output, $1.es_variable, $3.es_variable);
+
+					// SINTESIS
+					$$.es_direccion = 0;
+					$$.tipo = 1;
+
 					fprintf(fout, ";R72:\t<exp> ::= <exp> + <exp>\n");
 				}
 		| exp '-' exp 
 				{
+					// El tipo tiene que ser entero.
+					if($1.tipo != ENTERO || $3.tipo != ENTERO)
+					{
+						errorSemantico("Operacion logica con operandos enteros.");
+						return -1;
+					}
+
+					// GENERACION DE CODIGO
+					restar(output, $1.es_variable, $3.es_variable);
+
+					// SINTESIS
+					$$.es_direccion = 0;
+					$$.tipo = 1;
+
 					fprintf(fout, ";R73:\t<exp> ::=  <exp> - <exp>\n");
 				}
 		| exp '/' exp 
 				{
+					// El tipo tiene que ser entero.
+					if($1.tipo != ENTERO || $3.tipo != ENTERO)
+					{
+						errorSemantico("Operacion logica con operandos enteros.");
+						return -1;
+					}
+
+					// GENERACION DE CODIGO
+					dividir(output, $1.es_variable, $3.es_variable);
+
+					// SINTESIS
+					$$.es_direccion = 0;
+					$$.tipo = ENTERO;
+
 					fprintf(fout, ";R74:\t<exp> ::=  <exp> / <exp>\n");
 				}
 		| exp '*' exp 
 				{
+					// El tipo tiene que ser entero.
+					if($1.tipo != ENTERO || $3.tipo != ENTERO)
+					{
+						errorSemantico("Operacion logica con operandos enteros.");
+						return -1;
+					}
+
+					// GENERACION DE CODIGO
+					multiplicar(output, $1.es_variable, $3.es_variable);
+
+					// SINTESIS
+					$$.es_direccion = 0;
+					$$.tipo = ENTERO;
+
 					fprintf(fout, ";R75:\t<exp> ::= <exp> * <exp>\n");
 				}
 		| '-' exp %prec MENOSU 
 				{
+					// El tipo tiene que ser entero.
+					if($2.tipo != ENTERO)
+					{
+						errorSemantico("Operacion logica con operandos enteros.");
+						return -1;
+					}
+
+					// GENERACION DE CODIGO
+					cambiar_signo(output, $2.es_variable);
+
+					// SINTESIS
+					$$.es_direccion = 0;
+					$$.tipo = ENTERO;
+
 					fprintf(fout, ";R76:\t<exp> ::= -<exp>\n");
 				}
 		| exp TOK_AND exp 
 				{
+					// El tipo tiene que ser entero.
+					if($1.tipo != BOOLEANO || $3.tipo != BOOLEANO)
+					{
+						errorSemantico("Operacion logica con operandos enteros.");
+						return -1;
+					}
+
+					// GENERACION DE CODIGO
+					y(output, $1.es_direccion, $3.es_direccion);
+
+					// SINTESIS
+					$$.es_direccion = 0;
+					$$.tipo = BOOLEANO;
+
 					fprintf(fout, ";R77:\t<exp> ::= <exp> && <exp>\n");
 				}
 		| exp TOK_OR exp 
 				{
+					// El tipo tiene que ser entero.
+					if($1.tipo != BOOLEANO || $3.tipo != BOOLEANO)
+					{
+						errorSemantico("Operacion logica con operandos enteros.");
+						return -1;
+					}
+
+					// GENERACION DE CODIGO
+					o(output, $1.es_direccion, $3.es_direccion);
+
+					// SINTESIS
+					$$.es_direccion = 0;
+					$$.tipo = BOOLEANO;
+
 					fprintf(fout, ";R78:\t<exp> ::= <exp> || <exp>\n");
 				}
 		| '!' exp 
 				{
+					// El tipo tiene que ser entero.
+					if($2.tipo != BOOLEANO)
+					{
+						errorSemantico("Operacion logica con operandos enteros.");
+						return -1;
+					}
+
+					// GENERACION DE CODIGO
+					no(output, $1.es_direccion, cuantos);
+					cuantos++;
+
+					// SINTESIS
+					$$.es_direccion = 0;
+					$$.tipo = BOOLEANO;
+
 					fprintf(fout, ";R79:\t<exp> ::= !<exp>\n");
 				}
 		| identificador 
