@@ -763,28 +763,121 @@ resto_lista_expresiones: ',' exp resto_lista_expresiones
 					fprintf(fout, ";R92:\t<resto_lista_expresiones> ::=  \n");
 				};
 
+/*
+	COMPARACIONES
+*/
 comparacion: exp TOK_IGUAL exp 
 				{
+					// El tipo tiene que ser entero.
+					if($1.tipo != ENTERO || $3.tipo != ENTERO)
+					{
+						errorSemantico("Comparacion con operandos booleanos.");
+						return -1;
+					}
+
+					// GENERACION DE CODIGO
+					igual(output, $1.es_direccion, $3.es_direccion, cuantos);
+					cuantos++;
+
+					// SINTESIS
+					$$.es_direccion = 0;
+					$$.tipo = BOOLEANO;
+
 					fprintf(fout, ";R93:\t<comparacion> ::= <exp> == <exp> \n");
 				}
 		| exp TOK_DISTINTO exp 
 				{
+					// El tipo tiene que ser entero.
+					if($1.tipo != ENTERO || $3.tipo != ENTERO)
+					{
+						errorSemantico("Comparacion con operandos booleanos.");
+						return -1;
+					}
+
+					// GENERACION DE CODIGO
+					distinto(output, $1.es_direccion, $3.es_direccion, cuantos);
+					cuantos++;
+
+					// SINTESIS
+					$$.es_direccion = 0;
+					$$.tipo = BOOLEANO;
+
 					fprintf(fout, ";R94:\t<comparacion> ::= <exp> != exp\n");
 				}
 				| exp TOK_MAYORIGUAL exp 
 				{
+					// El tipo tiene que ser entero.
+					if($1.tipo != ENTERO || $3.tipo != ENTERO)
+					{
+						errorSemantico("Comparacion con operandos booleanos.");
+						return -1;
+					}
+
+					// GENERACION DE CODIGO
+					mayor_igual(output, $1.es_direccion, $3.es_direccion, cuantos);
+					cuantos++;
+
+					// SINTESIS
+					$$.es_direccion = 0;
+					$$.tipo = BOOLEANO;
+
 					fprintf(fout, ";R95:\t<comparacion> ::= <exp> >= exp\n");
 				}
 				| exp TOK_MENORIGUAL exp 
 				{
+					// El tipo tiene que ser entero.
+					if($1.tipo != ENTERO || $3.tipo != ENTERO)
+					{
+						errorSemantico("Comparacion con operandos booleanos.");
+						return -1;
+					}
+
+					// GENERACION DE CODIGO
+					menor_igual(output, $1.es_direccion, $3.es_direccion, cuantos);
+					cuantos++;
+
+					// SINTESIS
+					$$.es_direccion = 0;
+					$$.tipo = BOOLEANO;
+
 					fprintf(fout, ";R96:\t<comparacion> ::= <exp> TOK_MENORIGUAL exp\n");
 				}
 				| exp '>' exp 
 				{
+					// El tipo tiene que ser entero.
+					if($1.tipo != ENTERO || $3.tipo != ENTERO)
+					{
+						errorSemantico("Comparacion con operandos booleanos.");
+						return -1;
+					}
+
+					// GENERACION DE CODIGO
+					mayor(output, $1.es_direccion, $3.es_direccion, cuantos);
+					cuantos++;
+
+					// SINTESIS
+					$$.es_direccion = 0;
+					$$.tipo = BOOLEANO;
+
 					fprintf(fout, ";R97:\t<comparacion> ::= exp > <exp>\n");
 				}
 				| exp '<' exp 
 				{
+					// El tipo tiene que ser entero.
+					if($1.tipo != ENTERO || $3.tipo != ENTERO)
+					{
+						errorSemantico("Comparacion con operandos booleanos.");
+						return -1;
+					}
+
+					// GENERACION DE CODIGO
+					menor(output, $1.es_direccion, $3.es_direccion, cuantos);
+					cuantos++;
+
+					// SINTESIS
+					$$.es_direccion = 0;
+					$$.tipo = BOOLEANO;
+
 					fprintf(fout, ";R98:\t<comparacion> ::= exp < <exp>\n");
 				};
 
