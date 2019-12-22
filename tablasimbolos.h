@@ -18,10 +18,11 @@ typedef struct
 /**************** FUNCIONES **************************************************/
 void crearAmbitoGlobal();
 void cerrarAmbitos();
-STATUS insertarSimbolo(const char *lexema, INFO_SIMBOLO *info);
+STATUS insertarSimbolo(INFO_SIMBOLO *info);
 INFO_SIMBOLO *buscarSimbolo(const char *lexema);
 STATUS crearAmbitoLocal(const char *lexema, INFO_SIMBOLO *info);
 STATUS cerrarAmbitoLocal();
 int es_local(const char *lexema);
+int existe_local();
 
 #endif

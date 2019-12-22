@@ -31,7 +31,7 @@ void cerrarAmbitos()
     free(ts);
 }
 
-STATUS insertarSimbolo(const char *lexema, INFO_SIMBOLO *info)
+STATUS insertarSimbolo(INFO_SIMBOLO *info)
 {
     TABLA_HASH *tabla_hash = NULL;
     if (ts == NULL || info == NULL)
@@ -50,8 +50,9 @@ STATUS insertarSimbolo(const char *lexema, INFO_SIMBOLO *info)
 INFO_SIMBOLO *buscarSimbolo(const char *lexema)
 {
     INFO_SIMBOLO *ret = NULL;
-    if (!ts || !lexema)
+    if (!ts || !lexema || !ts->contexto_global){
         return ERR;
+    }
     if (ts->contexto_local)
     {
         ret = buscar_simbolo(ts->contexto_local, lexema);
@@ -60,6 +61,7 @@ INFO_SIMBOLO *buscarSimbolo(const char *lexema)
             return ret;
         }
     }
+    printf("Buscamos en global\n");
     return buscar_simbolo(ts->contexto_global, lexema);
 }
 
@@ -130,4 +132,13 @@ int es_local (const char *lexema)
             return 0;
         }
     return -1;
+}
+
+int existe_local ()
+{
+    if (ts->contexto_local != NULL){
+        return 1;
+    }
+
+    return 0;
 }

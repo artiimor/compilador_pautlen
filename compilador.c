@@ -17,9 +17,7 @@ int main(int argc, char** argv) {
     fprintf(stderr, "formato incorrecto:\n./alfa input output\n");
     return 1;
   }
-  crearAmbitoGlobal();
-	escribir_subseccion_data(fout);
-	escribir_cabecera_bss(fout);
+  
   yyparse();
   fclose(yyin);
 

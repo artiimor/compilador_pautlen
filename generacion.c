@@ -82,7 +82,7 @@ void escribir_inicio_main(FILE *fpasm)
 void escribir_fin(FILE *fpasm)
 {
     fprintf(fpasm, "fin:\n");
-    fprintf(fpasm, "\tmov dword esp, [__esp]\n");
+    fprintf(fpasm, "\tmov esp, [__esp]\n");
     fprintf(fpasm, "\tret\n");
     fprintf(fpasm, "\n\n");
 
@@ -488,21 +488,21 @@ void mayor(FILE *fpasm, int es_variable1, int es_variable2, int etiqueta)
     fprintf(fpasm, "\tcmp eax, edx\n");
     /*Salto si se cumple la condicion*/
     /*TODO lo mismo hay que poner near idk*/
-    fprintf(fpasm, "\tjg _mayor_%d\n", etiqueta);
+    fprintf(fpasm, "\tjg near _mayor_%d\n", etiqueta);
     /*Caso cuando no se cumple la condicion*/
-    fprintf(fpasm, "\tpush 0\n");
+    fprintf(fpasm, "\tpush dword 0\n");
     /*y nos vamos*/
-    fprintf(fpasm, "\tjmp _fin_mayor_%d\n", etiqueta);
+    fprintf(fpasm, "\tjmp near _fin_mayor_%d\n", etiqueta);
     /*Cuando si es igual*/
     fprintf(fpasm, "_mayor_%d:\n", etiqueta);
-    fprintf(fpasm, "\tpush 1\n");
+    fprintf(fpasm, "\tpush dword 1\n");
     fprintf(fpasm, "_fin_mayor_%d:\n", etiqueta);
 
     fprintf(fpasm, "\n\n");
 }
 void leer(FILE *fpasm, char *nombre, int tipo)
 {
-    fprintf(fpasm, "\tpush _%s\n", nombre);
+    fprintf(fpasm, "\tpush dword _%s\n", nombre);
 
     if (tipo == BOOLEANO)
     {
@@ -631,7 +631,7 @@ void while_exp_pila(FILE *fpasm, int exp_es_variable, int etiqueta)
 void while_fin(FILE *fpasm, int etiqueta)
 {
 
-    fprintf(fpasm, "\tjmp _while_inicio_%d\n", etiqueta);
+    fprintf(fpasm, "\tjmp near _while_inicio_%d\n", etiqueta);
     fprintf(fpasm, "_while_fin_%d:\n", etiqueta);
 }
 void escribir_elemento_vector(FILE *fpasm, char *nombre_vector,

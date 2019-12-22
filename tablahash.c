@@ -130,7 +130,7 @@ INFO_SIMBOLO *buscar_simbolo(const TABLA_HASH *th, const char *lexema){
         }
         temp = temp->siguiente;
     }
-
+    
     return temp->info;
 }
 
