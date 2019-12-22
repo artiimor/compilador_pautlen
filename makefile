@@ -3,7 +3,7 @@ CFLAGS = -Wall -g
 OBJECTS = lex.yy.o y.tab.o compilador.o tablahash.o generacion.o tablasimbolos.o
 
 all: $(OBJECTS)
-	$(CC) $(CFLAGS) -o alfa $(OBJECTS)
+	$(CC) $(CFLAGS) -o alfa $(OBJECTS) 
 compilador.o: compilador.c y.tab.h
 	$(CC) $(CFLAGS) -c compilador.c
 generacion.o: generacion.c generacion.h
@@ -23,3 +23,6 @@ y.tab.h: alfa.y
 
 clean:
 	rm alfa *.o lex.yy.c y.tab.c y.tab.h y.output
+
+runv:
+	valgrind --leak-check=full --track-origins=yes -v ./alfa fibonacci.alfa misalida.asm

@@ -5,7 +5,7 @@
 
 TablaSimbolos *ts = NULL;
 
-void *crearAmbitoGlobal()
+void crearAmbitoGlobal()
 {
     TablaSimbolos *p_tabla = NULL;
     p_tabla = (TablaSimbolos *)calloc(1, sizeof(TablaSimbolos));
@@ -34,15 +34,16 @@ void cerrarAmbitos()
 STATUS insertarSimbolo(const char *lexema, INFO_SIMBOLO *info)
 {
     TABLA_HASH *tabla_hash = NULL;
-    if (!ts || !info)
+    if (ts == NULL || info == NULL)
     {
+        
         return ERR;
     }
-
-    if (ts->contexto_local)
+    if (ts->contexto_local != NULL)
         tabla_hash = ts->contexto_local;
     else
         tabla_hash = ts->contexto_global;
+    
     return insertar_simbolo(tabla_hash, info->lexema, info->categoria, info->tipo, info->clase, info->adicional1, info->adicional2);
 }
 
@@ -123,5 +124,10 @@ int es_local (const char *lexema)
             return 1;
         }
     }
-    return 0;
+    ret = buscar_simbolo(ts->contexto_global, lexema);
+        if (ret)
+        {
+            return 0;
+        }
+    return -1;
 }

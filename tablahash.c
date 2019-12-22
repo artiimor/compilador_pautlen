@@ -26,12 +26,13 @@ INFO_SIMBOLO* crear_info_simbolo(const char *lexema, CATEGORIA categ, TIPO tipo,
     }
 
     simb->lexema = strdup(lexema);
+    
     simb->categoria = categ;
     simb->tipo = tipo;
     simb->clase = clase;
     simb->adicional1 = adic1;
     simb->adicional2 = adic2;
-
+    
     return simb;
 }
 
@@ -139,7 +140,7 @@ STATUS insertar_simbolo(TABLA_HASH *th, const char *lexema, CATEGORIA categ, TIP
     INFO_SIMBOLO *newInfo;
     NODO_HASH *newNodo;
     NODO_HASH *temp;
-
+    
     if(th == NULL){
         printf("Error al insertar el simbolo.\n");
         return ERR;
@@ -147,6 +148,7 @@ STATUS insertar_simbolo(TABLA_HASH *th, const char *lexema, CATEGORIA categ, TIP
 
     /* Miramos que no exista ya el simbolo a insertar */
     if(buscar_simbolo(th, lexema)!=NULL){
+        
         return ERR;
     }
 
@@ -155,7 +157,7 @@ STATUS insertar_simbolo(TABLA_HASH *th, const char *lexema, CATEGORIA categ, TIP
 
     newNodo = crear_nodo(newInfo);
     if(newNodo == NULL) return ERR;
-
+    
     pos = hash(lexema) % th->tam;
 
     if(th->tabla[pos] == NULL){

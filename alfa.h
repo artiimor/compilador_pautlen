@@ -12,7 +12,7 @@ typedef enum { FALSE = 0, TRUE = 1 } BOOL;
 #define MAX_TAMANIO_VECTOR 64
 
 typedef struct {
-	char *lexema;
+	char lexema[128];
 	int tipo;
 	int valor_entero;
 	int es_direccion;

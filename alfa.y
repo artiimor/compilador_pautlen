@@ -148,7 +148,9 @@ programa: TOK_MAIN '{' declaraciones funciones sentencias '}'
 
 declaraciones: declaracion 
 				{
+					
 					fprintf(fout, ";R2:\t<declaraciones> ::= <declaracion>\n");
+					escribir_segmento_codigo(fout);
 				}
 		| declaracion declaraciones	
 				{
@@ -167,6 +169,7 @@ declaracion: clase identificadores ';'
 clase: clase_escalar 
 				{
 					clase_actual = ESCALAR;
+					
 					fprintf(fout, ";R5:\t<clase> ::= <clase_escalar>\n"); clase_actual = ESCALAR;
 				}
 		| clase_vector 
@@ -236,12 +239,17 @@ funciones: /*vacio*/
 					fprintf(fout, ";R20:\t<funciones>: <funcion> <funciones>\n");
 				};
 
+
+/*
+	COSAS PARA FUNCIONES
+*/
 /*
 	REGLA 22
 */
 
 funcion: fn_declaration sentencias TOK_LLAVEDERECHA 
 				{
+					printf("DECLARACION DE PUTA MADRE\n");
 				  //COMPROBACIONES SEMANTICAS
 				  //ERROR SI LA FUNCION NO TIENE SENTENCIA DE RETORNO
 					if (hayReturn == 0)
@@ -265,44 +273,53 @@ funcion: fn_declaration sentencias TOK_LLAVEDERECHA
 
 fn_declaration : fn_name TOK_PARENTESISIZQUIERDO parametros_funcion TOK_PARENTESISDERECHO TOK_LLAVEIZQUIERDA declaraciones_funcion 
 				{
+					printf("ME CAGO EN MIS PUTOS MUERTOS\n");
 				  //COMPROBACIONES SEMANTICAS
 				  //ERROR SI YA SE HA DECLARADO UNA FUNCION CON NOMBRE $1.lexema
 					if (buscarSimbolo($1.lexema) != NULL)
 					{
-						yyerror("La funcion %s ha sido declarada dos veces.\n",$1.lexema);
+						errorSemantico("La funcion %s ha sido declarada dos veces.\n",$1.lexema);
 						return -1;
 					}
 				  // simbolo->num_parametros = num_parametros_actual;
 				  strcpy($$.lexema, $1.lexema);
 				  $$.tipo = $1.tipo;
 				  //GENERACION DE CODIGO
-				  declararFuncion(fout, $1.lexema, num_variables_locales_actual);
+					printf("HOLA AMEGO\n");
+				  
 				} 
 
 fn_name : TOK_FUNCTION tipo TOK_IDENTIFICADOR 
 				{
+					printf("en el nombre de la funcion\n");
   				//ERROR SI YA SE HA DECLARADO UNA FUNCION CON NOMBRE $3.lexema
 					if (buscarSimbolo($3.lexema) != NULL)
 					{
 						yyerror("El identificador %s ha sido declarado dos veces.\n",$3.lexema);
 						return -1;
 					}
+
   				$$.tipo = tipo_actual;
   				strcpy($$.lexema, $3.lexema);
 
   				//ABRIR AMBITO EN LA TABLA DE SIMBOLOS CON IDENTIFICADOR $3.lexema
 					// TODO supongo adicionales como 0
-					insertarSimbolo($3.lexema, crear_info_simbolo($3.lexema, FUNCION, tipo_actual, clase_actual, 0, 0));
+					
+					crearAmbitoLocal($3.lexema, crear_info_simbolo($3.lexema, FUNCION, tipo_actual, clase_actual, 0, 0));
 
   				//RESETEAR VARIABLES QUE NECESITAMOS PARA PROCESAR LA FUNCION:
 					num_variables_locales_actual = 0;
 					pos_variable_local_actual = 1;
 					num_parametros_actual = 0;
 					pos_parametro_actual = 0;
+
 				}
 
-funcion: TOK_FUNCTION tipo identificador '(' parametros_funcion ')' '{' declaraciones_funcion sentencias '}'
+funcion: TOK_FUNCTION tipo TOK_IDENTIFICADOR '(' parametros_funcion ')' '{' declaraciones_funcion sentencias '}'
 				{
+					printf("PRUEBITA\n");
+					retornarFuncion(fout, tiporeturn); 
+					tiporeturn=0; 
 					fprintf(fout, ";R22:\t<funcion> ::= function <tipo> <identificador> ( <parametros_funcion> ) { <declaraciones_funcion> <sentencias> }\n");
 				};
 
@@ -324,13 +341,6 @@ resto_parametros_funcion:	';' parametro_funcion resto_parametros_funcion
 					fprintf(fout, ";R26:\t<resto_parametros_funcion> ::= \n");
 				};
 
-parametro_funcion: tipo idpf 
-				{
-				  //INCREMENTAR CONTADORES, POR EJEMPLO
-				  num_parametros_actual++;
-				  pos_parametro_actual++;
-				};
-
 
 /*
 	REGLA 27
@@ -338,20 +348,29 @@ parametro_funcion: tipo idpf
 
 idpf : TOK_IDENTIFICADOR 
 				{
+					printf("INSERTAMOS UN SIMBOLO:\n");
+					errorSemantico($1.lexema);
 					// COMPROBACIONES SEMANTICAS PARA $1.lexema
 					if (buscarSimbolo($1.lexema) != NULL)
 					{
 						yyerror("El identificador %s ha sido declarado dos veces.\n",$1.lexema);
 						return -1;
 					}
-    			
     			// DECLARAR SIMBOLO EN LA TABLA
 					// Categoria = FUNCION. El tipo y clase los actuales
-					insertarSimbolo($1.lexema, crear_info_simbolo($1.lexema, FUNCION, tipo_actual, clase_actual, num_parametros_actual, pos_parametro_actual));
+					insertarSimbolo($1.lexema, crear_info_simbolo($1.lexema, FUNCION, tipo_actual, clase_actual, num_parametros_actual, num_variables_locales_actual));
+					if (buscarSimbolo($1.lexema) == NULL)
+					{
+						printf("ME CAGO EN LA PUTA\n");
+						yyerror("El identificador %s ha sido declarado dos veces.\n",$1.lexema);
+						return -1;
+					}
 				};
 
 parametro_funcion: tipo idpf 
 				{
+					
+					printf("FUNCION\n");
 					// Incrementamos contadores
 					num_parametros_actual++;
 					pos_parametro_actual++;
@@ -362,6 +381,7 @@ parametro_funcion: tipo idpf
 
 declaraciones_funcion:	 declaraciones 
 				{
+					
 					fprintf(fout, ";R28:\t<declaraciones_funcion> ::= <declaraciones>\n");
 				}
 		| /*vacio*/ 
@@ -422,13 +442,13 @@ asignacion:	TOK_IDENTIFICADOR '=' exp
 					INFO_SIMBOLO *simbolo = buscarSimbolo($1.lexema);
 
 					// Comprobamos que el simbolo existe
-					if (simbolo == NULL)
+					if (simbolo != NULL)
 					{
-						errorSemantico ("[ERROR] Acceso a variable no declarada.\n");
+						errorSemantico ("[ERROR] La variable ya ha sido declarada.\n");
 						return -1;
 					}
 					// Comprobamos que no es funcion
-					if (simbolo->categoria == FUNCION)
+					/*if (simbolo->categoria == FUNCION)
 					{
 						errorSemantico ("[ERROR] Asignacion a funcion.\n");
 						return -1;
@@ -438,30 +458,49 @@ asignacion:	TOK_IDENTIFICADOR '=' exp
 					{
 						errorSemantico ("[ERROR] Asignacion a vector.\n");
 						return -1;
-					}
+					} 
 
 					if (simbolo->tipo != $3.tipo){
 						errorSemantico("[ERROR]. Los tipos no coinciden");
-					}
+					} */
 
 					// Si la variable esta en el ambito local
 					if (es_local($1.lexema))
 					{
-						printf("PENDIENTE\n");
+						printf("PENDIENTE\ LOCALn");
 					}
 					// Si la variable es global
 					else
 					{
-						printf("PENDIENTE\n");
+						INFO_SIMBOLO* info = buscarSimbolo($1.lexema);
+					if(info == NULL)
+					{
+						errorSemantico("Acceso a variable no declarada\n");
+						return -1;
+					} else if(info->categoria == FUNCION)
+					{
+						errorSemantico("asignacion a funcion\n");
+						return -1;
+					} else if(info->clase == VECTOR)
+					{
+						errorSemantico("asignacion a vector\n");
+						return -1;
+					} else if(info->tipo != $3.tipo)
+					{
+						errorSemantico("error en los tipos.\n");
+						return -1;
 					}
 
+					// DECLARAMOS
 					// Por ultimo, imprimimos
 					fprintf(fout, ";R43:\t<asigancion> ::= <identificador> = <exp>\n");
+				}
 				}
             | elemento_vector '=' exp 
 				{
 					fprintf(fout, ";R44:\t<asignacion> ::= <elemento_vector> = <exp>\n");
 				};
+				
 
 elemento_vector: TOK_IDENTIFICADOR '[' exp ']' 
 				{
@@ -470,7 +509,7 @@ elemento_vector: TOK_IDENTIFICADOR '[' exp ']'
 					// Comprobamos que el simbolo existe
 					if (simbolo == NULL)
 					{
-						errorSemantico ("[ERROR] Acceso a variable no declarada.\n");
+						errorSemantico ("[ERROR] Acceso a variable no declarada. $1.lexema\n");
 						return -1;
 					}
 
@@ -731,19 +770,21 @@ exp: exp '+' exp
 					INFO_SIMBOLO *simbolo = buscarSimbolo($1.lexema);
 
 					// Comprobamos que el simbolo existe
-					if (simbolo == NULL)
+					printf("HOLA\n");
+					if (simbolo == 0)
 					{
 						errorSemantico ("[ERROR] Acceso a variable no declarada.\n");
+						errorSemantico($1.lexema);
 						return -1;
 					}
-
+					
 					// Si la categoria es una funcion
+					printf("%d\n",simbolo);
 					if (simbolo->categoria == FUNCION)
 					{
 						errorSemantico ("[ERROR] intento de scan a una funcion\n");
-						return -1;
 					}
-
+					
 					// Si la clase es un vector
 					if (simbolo->clase == VECTOR)
 					{
@@ -1026,11 +1067,27 @@ letra: TOK_IDENTIFICADOR
 
 digito: TOK_CONSTANTE_ENTERA 
 				{
+					
 					fprintf(fout, ";R115:\t<digito> ::= 0|1|2|3|4|5|6|7|8|9 \n");
 				};
 
 identificador: TOK_IDENTIFICADOR 
 				{
+
+					if (es_local($1.lexema) == 0)
+					{	
+						errorSemantico($1.lexema);
+						printf("AQUI\n");
+						if (clase_actual == ESCALAR){
+							pos_variable_local_actual++;
+							num_variables_locales_actual++;
+							declarar_variable(fout, $1.lexema, $1.tipo, clase_actual);
+						}
+						else{
+							errorSemantico("ERROR. Variable de tipo no escalar");
+						}
+					}
+
 					fprintf(fout, ";R108:\t<identificador> ::= TOK_IDENTIFICADOR \n");
 				}
         | letra cola_identificador 

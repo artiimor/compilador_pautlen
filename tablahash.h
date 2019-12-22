@@ -18,7 +18,7 @@ typedef enum { ENTERO, BOOLEANO } TIPO;
 
 /* Clase de un simbolo: pueden ser variables atomicas (escalares) o listas/arrays
  (vectores) */
-typedef enum { ESCALAR, VECTOR } CLASE;
+typedef enum { ESCALAR = 1, VECTOR } CLASE;
 
 /* Informacion de un simbolo */
 typedef struct info_simbolo{

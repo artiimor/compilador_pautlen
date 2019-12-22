@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include "generacion.h"
 
+extern FILE* fout;
+
 /**************************************************************************/
 /**********************NOTAS SOBRE LA IMPLEMENTACION:**********************/
 /**************************************************************************/
@@ -30,19 +32,19 @@ void escribir_cabecera_bss(FILE *fpasm)
 {
     if (fpasm == NULL)
         return;
-
-    fprintf(fpasm, "segment .bss\n__esp    resd 1\n");
+    
+    fprintf(fpasm, ";escribir_cabecera_bss\n");
+    fprintf(fpasm, "segment .bss\n\t__esp resd 1\n");
 }
 
 void escribir_subseccion_data(FILE *fpasm)
 {
     if (fpasm == NULL)
         return;
-
+    fprintf(fpasm, ";escribir_subseccion_data\n");
     fprintf(fpasm, "segment .data\n");
     fprintf(fpasm, "\tzero_error db 'Error, has dividido por 0',0\n");
     fprintf(fpasm, "\tout_of_range_error db 'Error, al acceder al vector',0\n");
-    fprintf(fpasm, "\n\n");
 }
 
 void declarar_variable(FILE *fpasm, char *nombre, int tipo, int tamano)
@@ -52,7 +54,10 @@ void declarar_variable(FILE *fpasm, char *nombre, int tipo, int tamano)
         return;
 
     /*TODO lo mismo el tipo importa*/
-    fprintf(fpasm, "_%s resd %d\n", nombre, tamano);
+    fprintf(fpasm, ";declarar_variable\n");
+    
+
+    fprintf(fpasm, "\t_%s resd %d\n", nombre, tamano);
 
     /*Aqui no terminamos con dos saltos de linea por si se declaran varias variables seguidas*/
 }
@@ -60,10 +65,11 @@ void declarar_variable(FILE *fpasm, char *nombre, int tipo, int tamano)
 void escribir_segmento_codigo(FILE *fpasm)
 {
     fprintf(fpasm, "segment .text\n");
-    fprintf(fpasm, "global main\n");
+    fprintf(fpasm, "\tglobal main\n");
     /*TODO comprobar que no hay mas funciones*/
-    fprintf(fpasm, "extern print_string, print_endofline, scan_int, print_int, scan_int, scan_boolean, print_boolean\n");
-    fprintf(fpasm, "\n\n");
+	fprintf(fpasm, "\textern malloc, free\n");
+	fprintf(fpasm, "\textern scan_int, print_int, scan_boolean, print_boolean\n");
+	fprintf(fpasm, "\textern print_endofline, print_blank, print_string\n");
 }
 
 void escribir_inicio_main(FILE *fpasm)

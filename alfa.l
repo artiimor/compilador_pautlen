@@ -63,7 +63,12 @@ true				{col+=yyleng; fprintf(fout, ";D:\t%s\n", yytext); return TOK_TRUE;}
 "!"					{col+=yyleng; fprintf(fout, ";D:\t!\n"); return yytext[0];}
 "."					{col+=yyleng; fprintf(fout, ";D:\t.\n"); return yytext[0];}
 [ \t\r]				{col += yyleng;}
-{ENTERO}			{col+=yyleng; fprintf(fout, ";D:\t%s\n", yytext); return TOK_CONSTANTE_ENTERA;}
+{ENTERO}			{
+						yylval.atributos.tipo = ENTERO;
+						yylval.atributos.valor_entero = atoi(yytext);
+						strcpy(yylval.atributos.lexema , yytext);
+						col+=yyleng; fprintf(fout, ";D:\t%s\n", yytext); return TOK_CONSTANTE_ENTERA;
+					}
 {COMENTARIO}|"\n"	{col = 0; line++;}
 {IDENTIFICADOR}		{
 						if (yyleng > 50) {
@@ -71,6 +76,7 @@ true				{col+=yyleng; fprintf(fout, ";D:\t%s\n", yytext); return TOK_TRUE;}
 							return TOK_ERROR;
 						} else {
 							col += yyleng;
+								strcpy(yylval.atributos.lexema , yytext);
 							fprintf(fout, ";D:\t%s\n", yytext);
 							return TOK_IDENTIFICADOR;
 						}
