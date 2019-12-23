@@ -627,7 +627,7 @@ void while_exp_pila(FILE *fpasm, int exp_es_variable, int etiqueta)
     }
 
     fprintf(fpasm, "\tcmp eax, 0\n");
-    fprintf(fpasm, "\tje _while_fin_%d\n", etiqueta);
+    fprintf(fpasm, "\tje near _while_fin_%d\n", etiqueta);
 }
 void while_fin(FILE *fpasm, int etiqueta)
 {

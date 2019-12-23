@@ -703,7 +703,7 @@ exp: exp '+' exp
 					}
 
 					// GENERACION DE CODIGO
-					restar(fout, !$1.es_direccion, $3.es_direccion);
+					restar(fout, $1.es_direccion, $3.es_direccion);
 
 					// SINTESIS
 					$$.es_direccion = FALSE;
@@ -739,7 +739,7 @@ exp: exp '+' exp
 					}
 
 					// GENERACION DE CODIGO
-					multiplicar(fout, !$1.es_direccion, !$3.es_direccion);
+					multiplicar(fout, $1.es_direccion, $3.es_direccion);
 
 					// SINTESIS
 					$$.es_direccion = FALSE;
