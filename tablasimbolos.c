@@ -61,7 +61,6 @@ INFO_SIMBOLO *buscarSimbolo(const char *lexema)
             return ret;
         }
     }
-    printf("Buscamos en global\n");
     return buscar_simbolo(ts->contexto_global, lexema);
 }
 

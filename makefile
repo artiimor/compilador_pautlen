@@ -22,7 +22,15 @@ y.tab.h: alfa.y
 	$ bison -d -y -v alfa.y
 
 clean:
-	rm alfa *.o lex.yy.c y.tab.c y.tab.h y.output
+	rm -rf alfa lex.yy.c y.tab.c y.tab.h y.output
+	rm $(OBJECTS)
+
+
+asm:
+	nasm -felf32 -g misalida.asm
+	gcc -o ej -m32 misalida.o alfalib.o
+	./ej
+
 
 runv:
 	valgrind --leak-check=full --track-origins=yes -v ./alfa fibonacci.alfa misalida.asm

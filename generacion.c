@@ -522,8 +522,9 @@ void escribir(FILE *fpasm, int es_variable, int tipo)
 {
     if (es_variable) /*we need in the stack the true value of the variable*/
     {
-        fprintf(fpasm, "\tpop eax\n");
-        fprintf(fpasm, "\tpush dword [eax]\n");
+        fprintf(fpasm, "\tpop dword eax\n");
+        fprintf(fpasm, "\tmov dword eax, [eax]\n");
+        fprintf(fpasm, "\tpush dword eax\n");
     }
 
     if (tipo == BOOLEANO)

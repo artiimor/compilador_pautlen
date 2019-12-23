@@ -86,8 +86,6 @@
 
 /* OTROS */
 %token fn_complete_name
-%token if_exp
-%token if_exp_sentencias
 %token tipo_retorno
 
 
@@ -261,7 +259,6 @@ funciones: /*vacio*/
 
 funcion: fn_declaration sentencias TOK_LLAVEDERECHA 
 				{
-					printf("DECLARACION DE PUTA MADRE\n");
 				  //COMPROBACIONES SEMANTICAS
 				  //ERROR SI LA FUNCION NO TIENE SENTENCIA DE RETORNO
 					if (hayReturn == 0)
@@ -285,7 +282,6 @@ funcion: fn_declaration sentencias TOK_LLAVEDERECHA
 
 fn_declaration : fn_name TOK_PARENTESISIZQUIERDO parametros_funcion TOK_PARENTESISDERECHO TOK_LLAVEIZQUIERDA declaraciones_funcion 
 				{
-					printf("ME CAGO EN MIS PUTOS MUERTOS\n");
 				  //COMPROBACIONES SEMANTICAS
 				  //ERROR SI YA SE HA DECLARADO UNA FUNCION CON NOMBRE $1.lexema
 					if (buscarSimbolo($1.lexema) != NULL)
@@ -297,13 +293,11 @@ fn_declaration : fn_name TOK_PARENTESISIZQUIERDO parametros_funcion TOK_PARENTES
 				  strcpy($$.lexema, $1.lexema);
 				  $$.tipo = $1.tipo;
 				  //GENERACION DE CODIGO
-					printf("HOLA AMEGO\n");
 				  
 				} 
 
 fn_name : TOK_FUNCTION tipo TOK_IDENTIFICADOR 
 				{
-					printf("en el nombre de la funcion\n");
   				//ERROR SI YA SE HA DECLARADO UNA FUNCION CON NOMBRE $3.lexema
 					if (buscarSimbolo($3.lexema) != NULL)
 					{
@@ -328,7 +322,6 @@ fn_name : TOK_FUNCTION tipo TOK_IDENTIFICADOR
 
 funcion: TOK_FUNCTION tipo TOK_IDENTIFICADOR '(' parametros_funcion ')' '{' declaraciones_funcion sentencias '}'
 				{
-					printf("PRUEBITA\n");
 					retornarFuncion(fout, tiporeturn); 
 					tiporeturn=0; 
 					fprintf(fout, ";R22:\t<funcion> ::= function <tipo> <identificador> ( <parametros_funcion> ) { <declaraciones_funcion> <sentencias> }\n");
@@ -359,7 +352,6 @@ resto_parametros_funcion:	';' parametro_funcion resto_parametros_funcion
 
 idpf : TOK_IDENTIFICADOR 
 				{
-					printf("INSERTAMOS UN SIMBOLO:\n");
 					errorSemantico($1.lexema);
 					// COMPROBACIONES SEMANTICAS PARA $1.lexema
 					if (buscarSimbolo($1.lexema) != NULL)
@@ -372,7 +364,6 @@ idpf : TOK_IDENTIFICADOR
 					insertarSimbolo(crear_info_simbolo($1.lexema, FUNCION, tipo_actual, clase_actual, num_parametros_actual, num_variables_locales_actual));
 					if (buscarSimbolo($1.lexema) == NULL)
 					{
-						printf("ME CAGO EN LA PUTA\n");
 						yyerror("El identificador %s ha sido declarado dos veces.\n",$1.lexema);
 						return -1;
 					}
@@ -381,7 +372,6 @@ idpf : TOK_IDENTIFICADOR
 parametro_funcion: tipo idpf 
 				{
 					
-					printf("FUNCION\n");
 					// Incrementamos contadores
 					num_parametros_actual++;
 					pos_parametro_actual++;
@@ -478,7 +468,6 @@ asignacion:	TOK_IDENTIFICADOR '=' exp
 					// Si la variable esta en el ambito local
 					if (es_local($1.lexema))
 					{
-						printf("PENDIENTE LOCAL\n");
 					}
 					// Si la variable es global
 					else
@@ -548,7 +537,6 @@ elemento_vector: TOK_IDENTIFICADOR '[' exp ']'
 
 					
 
-					printf("PENDIENTE.\n");
 
 					// SINTESIS
 					strcpy($$.lexema, $1.lexema);
@@ -557,14 +545,47 @@ elemento_vector: TOK_IDENTIFICADOR '[' exp ']'
 					fprintf(fout, ";R48:\t<elemento_vector> ::= <identificador> [ <exp> ]\n");
 				};
 
-condicional: TOK_IF '(' exp ')' '{' sentencias '}' 
-				{
-					fprintf(fout, ";R50:\t<condicional> ::=	if ( <exp> ) { <sentencias> } \n");
-				}
-                | TOK_IF '(' exp ')' '{' sentencias '}' TOK_ELSE '{' sentencias '}'
-                {
-					fprintf(fout, ";R51:\t<condicional> ::= if ( <exp> ) { <sentencias> } else { <sentencias> }\n");
-				};
+/*
+	CONDICIONALES
+*/
+condicional: if_exp_sentencias '}' {
+    
+		// GENERACION
+		ifthenelse_fin(fout, $1.etiqueta); 
+		
+		fprintf(fout, ";R50:\t<condicional> ::=	if ( <exp> ) { <sentencias> } \n");
+		}
+| if_exp_sentencias '}' TOK_ELSE '{' sentencias '}' {
+
+		// GENERACION
+    ifthenelse_fin(fout, $1.etiqueta);
+
+		fprintf(fout, ";R51:\t<condicional> ::= if ( <exp> ) { <sentencias> } else { <sentencias> }\n");
+};
+
+if_exp: TOK_IF '(' exp ')' '{' {
+  //COMPROBACIONES SEMANTICAS
+	if($3.tipo != BOOLEANO){
+			errorSemantico("Tipo del condicional no booleano\n");
+			return -1;
+	}
+		
+  //SINTESIS
+	$$.etiqueta = cuantos++;
+
+	//GENERACION
+  ifthen_inicio(fout, !$3.es_direccion, $$.etiqueta);
+};
+
+if_exp_sentencias: if_exp sentencias {
+
+	// SINTESIS
+  $$.etiqueta = $1.etiqueta;
+
+	// GENERACION
+  ifthenelse_fin_then(fout, $$.etiqueta);
+}
+
 
 /*
 	PARA BUCLES
@@ -583,7 +604,6 @@ while: TOK_WHILE '(' {
 
 while_exp: while exp ')' '{' {
 	//COMPROBACIONES SEMANTICAS (VER SI EL TIPO DE exp ES BOOLEAN)
-  printf("NENENE\n");
 	if ($2.tipo != BOOLEANO)
 	{
 		errorSemantico("BUCLE sin expresion booleana\n");
@@ -605,7 +625,6 @@ lectura: TOK_SCANF TOK_IDENTIFICADOR
 					// Comprobamos que el simbolo existe
 					if (simbolo == NULL)
 					{
-						printf("HOLA\n");
 						errorSemantico ("[ERROR] Acceso a variable no declarada.\n");
 						return -1;
 					}
@@ -626,7 +645,6 @@ lectura: TOK_SCANF TOK_IDENTIFICADOR
 
 					if (es_local($2.lexema) == 1)
 					{
-						printf("PENDIENTE1\n");
 					}
 
 					// VAMOS A ESCANEAR UNA VARIABLE GLOBAL
@@ -636,14 +654,14 @@ lectura: TOK_SCANF TOK_IDENTIFICADOR
 						leer(fout, $2.lexema, tipo_actual);
 					}
 
-
+					$2.es_direccion = FALSE;
 					fprintf(fout, ";R54:\t<lectura> ::= scanf <identificador> \n");
 				};
 
 escritura:	TOK_PRINTF exp 
 				{
 					// GENERACION
-					escribir(fout, !$2.es_direccion, $2.tipo);
+					escribir(fout, $2.es_direccion, $2.tipo);
 
 					fprintf(fout, ";R56:\t<escritura> ::= printf <exp>\n");
 				};
@@ -670,7 +688,7 @@ exp: exp '+' exp
 					sumar(fout, $1.es_direccion, $3.es_direccion);
 
 					// SINTESIS
-					$$.es_direccion = 0;
+					$$.es_direccion = FALSE;
 					$$.tipo = ENTERO;
 
 					fprintf(fout, ";R72:\t<exp> ::= <exp> + <exp>\n");
@@ -688,7 +706,7 @@ exp: exp '+' exp
 					restar(fout, !$1.es_direccion, $3.es_direccion);
 
 					// SINTESIS
-					$$.es_direccion = 0;
+					$$.es_direccion = FALSE;
 					$$.tipo = ENTERO;
 
 					fprintf(fout, ";R73:\t<exp> ::=  <exp> - <exp>\n");
@@ -706,7 +724,7 @@ exp: exp '+' exp
 					dividir(fout, $1.es_direccion, $3.es_direccion);
 
 					// SINTESIS
-					$$.es_direccion = 0;
+					$$.es_direccion = FALSE;
 					$$.tipo = ENTERO;
 
 					fprintf(fout, ";R74:\t<exp> ::=  <exp> / <exp>\n");
@@ -724,7 +742,7 @@ exp: exp '+' exp
 					multiplicar(fout, !$1.es_direccion, !$3.es_direccion);
 
 					// SINTESIS
-					$$.es_direccion = 0;
+					$$.es_direccion = FALSE;
 					$$.tipo = ENTERO;
 
 					fprintf(fout, ";R75:\t<exp> ::= <exp> * <exp>\n");
@@ -742,7 +760,7 @@ exp: exp '+' exp
 					cambiar_signo(fout, $2.es_direccion);
 
 					// SINTESIS
-					$$.es_direccion = 0;
+					$$.es_direccion = FALSE;
 					$$.tipo = ENTERO;
 
 					fprintf(fout, ";R76:\t<exp> ::= -<exp>\n");
@@ -760,7 +778,7 @@ exp: exp '+' exp
 					y(fout, $1.es_direccion, $3.es_direccion);
 
 					// SINTESIS
-					$$.es_direccion = 0;
+					$$.es_direccion = FALSE;
 					$$.tipo = BOOLEANO;
 
 					fprintf(fout, ";R77:\t<exp> ::= <exp> && <exp>\n");
@@ -778,7 +796,7 @@ exp: exp '+' exp
 					o(fout, $1.es_direccion, $3.es_direccion);
 
 					// SINTESIS
-					$$.es_direccion = 0;
+					$$.es_direccion = FALSE;
 					$$.tipo = BOOLEANO;
 
 					fprintf(fout, ";R78:\t<exp> ::= <exp> || <exp>\n");
@@ -797,7 +815,7 @@ exp: exp '+' exp
 					cuantos++;
 
 					// SINTESIS
-					$$.es_direccion = 0;
+					$$.es_direccion = FALSE;
 					$$.tipo = BOOLEANO;
 
 					fprintf(fout, ";R79:\t<exp> ::= !<exp>\n");
@@ -808,7 +826,6 @@ exp: exp '+' exp
 					INFO_SIMBOLO *simbolo = buscarSimbolo($1.lexema);
 
 					// Comprobamos que el simbolo existe
-					printf("HOLA\n");
 					if (simbolo == 0)
 					{
 						errorSemantico ("[ERROR] Acceso a variable no declarada.\n");
@@ -817,11 +834,14 @@ exp: exp '+' exp
 					}
 					
 					// Si la categoria es una funcion
-					printf("%d\n",simbolo);
 					if (simbolo->categoria == FUNCION)
 					{
 						errorSemantico ("[ERROR] intento de scan a una funcion\n");
 					}
+
+					$$.tipo = simbolo->tipo;
+					$$.es_direccion = TRUE;
+
 					
 					// Si la clase es un vector
 					if (simbolo->clase == VECTOR)
@@ -830,7 +850,6 @@ exp: exp '+' exp
 						return -1;
 					}
 
-					printf("PENDIENTE\n");
 					escribir_operando(fout, $1.lexema, !$1.es_direccion);
 					fprintf(fout, ";R80:\t<exp> ::= <identificador>\n");
 				}
@@ -847,7 +866,6 @@ exp: exp '+' exp
 				}
 		| '(' exp ')' 
 				{
-					printf("VENGA YA\n");
 					// SINTESIS
 					$$.tipo = $2.tipo;
 					$$.es_direccion = $2.es_direccion;
@@ -856,7 +874,6 @@ exp: exp '+' exp
 				}
 		| '(' comparacion ')' 
 				{
-					printf("COJONUDO\n");
 					// SINTESIS
 					$$.tipo = BOOLEANO;
 					$$.es_direccion = $2.es_direccion;
@@ -873,7 +890,6 @@ exp: exp '+' exp
 				}
 		| identificador '(' lista_expresiones ')' 
 				{
-					printf("PENDIENTE\n");
 					fprintf(fout, ";R88:\t<exp> ::= <identificador> ( <lista_expresiones> )\n");
 				};
 
@@ -918,7 +934,7 @@ comparacion: exp TOK_IGUAL exp
 					cuantos++;
 
 					// SINTESIS
-					$$.es_direccion = 0;
+					$$.es_direccion = FALSE;
 					$$.tipo = BOOLEANO;
 
 					fprintf(fout, ";R93:\t<comparacion> ::= <exp> == <exp> \n");
@@ -937,7 +953,7 @@ comparacion: exp TOK_IGUAL exp
 					cuantos++;
 
 					// SINTESIS
-					$$.es_direccion = 0;
+					$$.es_direccion = FALSE;
 					$$.tipo = BOOLEANO;
 
 					fprintf(fout, ";R94:\t<comparacion> ::= <exp> != exp\n");
@@ -956,7 +972,7 @@ comparacion: exp TOK_IGUAL exp
 					cuantos++;
 
 					// SINTESIS
-					$$.es_direccion = 0;
+					$$.es_direccion = FALSE;
 					$$.tipo = BOOLEANO;
 
 					fprintf(fout, ";R95:\t<comparacion> ::= <exp> >= exp\n");
@@ -975,7 +991,7 @@ comparacion: exp TOK_IGUAL exp
 					cuantos++;
 
 					// SINTESIS
-					$$.es_direccion = 0;
+					$$.es_direccion = FALSE;
 					$$.tipo = BOOLEANO;
 
 					fprintf(fout, ";R96:\t<comparacion> ::= <exp> TOK_MENORIGUAL exp\n");
@@ -994,7 +1010,7 @@ comparacion: exp TOK_IGUAL exp
 					cuantos++;
 
 					// SINTESIS
-					$$.es_direccion = 0;
+					$$.es_direccion = FALSE;
 					$$.tipo = BOOLEANO;
 
 					fprintf(fout, ";R98:\t<comparacion> ::= exp > <exp>\n");
@@ -1013,7 +1029,7 @@ comparacion: exp TOK_IGUAL exp
 					cuantos++;
 
 					// SINTESIS
-					$$.es_direccion = 0;
+					$$.es_direccion = FALSE;
 					$$.tipo = BOOLEANO;
 
 					fprintf(fout, ";R97:\t<comparacion> ::= exp < <exp>\n");
@@ -1122,7 +1138,6 @@ identificador: TOK_IDENTIFICADOR
 						if (clase_actual == ESCALAR){
 							pos_variable_local_actual++;
 							num_variables_locales_actual++;
-							printf("declaramos\n");
 
 							// ANADIMOS A LA TABLA HASH
 							insertarSimbolo(crear_info_simbolo($1.lexema, VARIABLE, tipo_actual, clase_actual, 0, 0));

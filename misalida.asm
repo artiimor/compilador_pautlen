@@ -48,77 +48,8 @@ main:
 ;R32:	<sentencia> ::= <sentencia_simple> ; 
 ;D:	y
 ;D:	=
-;D:	1
-;R104:	<constante_entera> ::= <numero> 
-;R100:	<constante> ::= <constante_entera> 
-	push dword 1
-;R81:	<exp> ::= <constante> 
-;D:	;
-	pop dword eax
-	mov dword [_y], eax
-;R43:	<asigancion> ::= <identificador> = <exp>
-;R34:	<sentencia_simple> ::= <asignacion>
-;R32:	<sentencia> ::= <sentencia_simple> ; 
-;D:	while
-;D:	(
-_while_inicio_0:
-;D:	(
 ;D:	x
-;D:	>
-	push dword _x
-;R80:	<exp> ::= <identificador>
-;D:	1
-;R104:	<constante_entera> ::= <numero> 
-;R100:	<constante> ::= <constante_entera> 
-	push dword 1
-;R81:	<exp> ::= <constante> 
-;D:	)
-	pop dword edx
-	pop dword eax
-	cmp eax, edx
-	jg near _mayor_0
-	push dword 0
-	jmp near _fin_mayor_0
-_mayor_0:
-	push dword 1
-_fin_mayor_0:
-
-
-;R98:	<comparacion> ::= exp > <exp>
-;R83:	<exp> ::= ( <comparacion> )
-;D:	)
-;D:	{
-	pop eax
-	cmp eax, 0
-	je _while_fin_0
-;D:	y
-;D:	=
-;D:	x
-;D:	*
-	push dword _x
-;R80:	<exp> ::= <identificador>
-;D:	y
-;D:	;
-	push dword _y
-;R80:	<exp> ::= <identificador>
-	pop dword edx
-	pop dword eax
-	mov edx, dword [edx]
-	mov eax, dword [eax]
-	imul edx
-	push dword eax
-
-
-;R75:	<exp> ::= <exp> * <exp>
-	pop dword eax
-	mov dword [_y], eax
-;R43:	<asigancion> ::= <identificador> = <exp>
-;R34:	<sentencia_simple> ::= <asignacion>
-;R32:	<sentencia> ::= <sentencia_simple> ; 
-;D:	x
-;D:	=
-;D:	x
-;D:	-
+;D:	+
 	push dword _x
 ;R80:	<exp> ::= <identificador>
 ;D:	1
@@ -130,31 +61,24 @@ _fin_mayor_0:
 	pop dword edx
 	pop dword eax
 	mov eax, dword [eax]
-	sub eax, edx
+	add eax, edx
 	push dword eax
 
 
-;R73:	<exp> ::=  <exp> - <exp>
+;R72:	<exp> ::= <exp> + <exp>
 	pop dword eax
-	mov dword [_x], eax
+	mov dword [_y], eax
 ;R43:	<asigancion> ::= <identificador> = <exp>
 ;R34:	<sentencia_simple> ::= <asignacion>
 ;R32:	<sentencia> ::= <sentencia_simple> ; 
-;D:	}
-;R30:	<sentencias> ::= <sentencia> 
-;R31:	<sentencias> ::= <sentencia> <sentencias> 
-	jmp near _while_inicio_0
-_while_fin_0:
-;R52:	bucle ::= while ( <exp> ) { <sentencias> }
-;R41:	<bloque> ::= <bucle>
-;R33:	<sentencia> ::= <bloque>
 ;D:	printf
 ;D:	y
 ;D:	;
 	push dword _y
 ;R80:	<exp> ::= <identificador>
-	pop eax
-	push dword [eax]
+	pop dword eax
+	mov dword eax, [eax]
+	push dword eax
 	call print_int
 	add esp, 4
 	call print_endofline
@@ -165,7 +89,6 @@ _while_fin_0:
 ;R32:	<sentencia> ::= <sentencia_simple> ; 
 ;D:	}
 ;R30:	<sentencias> ::= <sentencia> 
-;R31:	<sentencias> ::= <sentencia> <sentencias> 
 ;R31:	<sentencias> ::= <sentencia> <sentencias> 
 ;R31:	<sentencias> ::= <sentencia> <sentencias> 
 fin:
