@@ -25,6 +25,7 @@
 	int tipo_actual;
 	int tamanio_vector_actual;
 	int etiqueta = 0;
+	char* pos_vector_actual;
 
 
 %}
@@ -230,6 +231,49 @@ clase_vector: TOK_ARRAY tipo '[' TOK_CONSTANTE_ENTERA ']'
 
 					fprintf(fout, ";R15:\t<clase_vector>: array <tipo> [ <constante_entera> ]");
 				};
+
+
+
+elemento_vector: TOK_IDENTIFICADOR '[' exp ']' 
+{
+						INFO_SIMBOLO *simbolo = buscarSimbolo($1.lexema);
+					// Comprobamos que el simbolo existe
+					if (simbolo == NULL)
+					{
+						errorSemantico ("[ERROR] Acceso a variable no declarada. $1.lexema\n");
+						return -1;
+					}
+
+					// Comprobamos que no es funcion
+					if (simbolo->categoria == FUNCION)
+					{
+						errorSemantico ("[ERROR] Asignacion a funcion.\n");
+						return -1;
+					}
+
+					//si el ambito es local y no es una variable global dentro de un ambito local
+					if(es_local($1.lexema) == 1  && !(simbolo->adicional2 == -1 && simbolo->adicional1 == -1))
+					{
+			 			errorSemantico("No estan permitidas las variables locales de tipo no escalar.");
+						return -1;
+					}
+					// Comprobamos que no es escalar
+					if (simbolo->clase == ESCALAR)
+					{
+						errorSemantico ("[ERROR] Asignacion a un elemento que no es vector.\n");
+						return -1;
+					}
+
+					// SINTESIS
+					$$.valor_entero = atoi($3.lexema);
+					$$.tipo = simbolo->tipo;
+					$$.es_direccion = TRUE;
+
+					escribir_elemento_vector(fout, $1.lexema, simbolo->adicional1, $3.es_direccion);
+
+					fprintf(fout, ";R48:\t<elemento_vector> ::= <identificador> [ <exp> ]\n");
+
+};
 
 identificadores: identificador 
 				{
@@ -500,50 +544,26 @@ asignacion:	TOK_IDENTIFICADOR '=' exp
 				}
             | elemento_vector '=' exp 
 				{
+					//COMPROBACIONES SEMANTICAS (VER SI $1.tipo == $3.tipo)
+					if ($1.tipo != $3.tipo)
+					{
+						errorSemantico("ERROR EN LA IGUALDAD DE LOS TIPOS\n");
+					}
+					INFO_SIMBOLO *simbolo = buscarSimbolo($1.lexema);
+  				//$1.valor ES EL INDICE DEL VECTOR EN EL QUE QUEREMOS ASIGNAR exp
+					
+					char *aux;
+					aux = (char*)malloc(1);
+					aux[0] = (char)($1.valor_entero + 48);
+					escribir_operando(fout, aux, 0);
+  				escribir_elemento_vector(fout, $1.lexema, simbolo->adicional1, $3.es_direccion);
+  				asignarDestinoEnPila(fout, $3.es_direccion);
 					fprintf(fout, ";R44:\t<asignacion> ::= <elemento_vector> = <exp>\n");
-				};
+
+};
+  				
 				
 
-elemento_vector: TOK_IDENTIFICADOR '[' exp ']' 
-				{
-					INFO_SIMBOLO *simbolo = buscarSimbolo($1.lexema);
-
-					// Comprobamos que el simbolo existe
-					if (simbolo == NULL)
-					{
-						errorSemantico ("[ERROR] Acceso a variable no declarada. $1.lexema\n");
-						return -1;
-					}
-
-					// Comprobamos que no es funcion
-					if (simbolo->categoria == FUNCION)
-					{
-						errorSemantico ("[ERROR] Asignacion a funcion.\n");
-						return -1;
-					}
-
-					//si el ambito es local y no es una variable global dentro de un ambito local
-					if(es_local($1.lexema) == 1  && !(simbolo->adicional2 == -1 && simbolo->adicional1 == -1))
-					{
-			 			errorSemantico("No estan permitidas las variables locales de tipo no escalar.");
-						return -1;
-					}
-					// Comprobamos que no es escalar
-					if (simbolo->clase == ESCALAR)
-					{
-						errorSemantico ("[ERROR] Asignacion a un elemento que no es vector.\n");
-						return -1;
-					}
-
-					
-
-
-					// SINTESIS
-					strcpy($$.lexema, $1.lexema);
-					$$.tipo = simbolo->tipo;
-
-					fprintf(fout, ";R48:\t<elemento_vector> ::= <identificador> [ <exp> ]\n");
-				};
 
 /*
 	CONDICIONALES
@@ -574,7 +594,7 @@ if_exp: TOK_IF '(' exp ')' '{' {
 	$$.etiqueta = cuantos++;
 
 	//GENERACION
-  ifthen_inicio(fout, !$3.es_direccion, $$.etiqueta);
+  ifthen_inicio(fout, $3.es_direccion, $$.etiqueta);
 };
 
 if_exp_sentencias: if_exp sentencias {
@@ -858,7 +878,6 @@ exp: exp '+' exp
 					//SINTESIS
 					$$.tipo = $1.tipo;
 					$$.es_direccion = $1.es_direccion;
-
 					// GENERACION
 					escribir_operando(fout, $1.lexema, $1.es_direccion);
 
@@ -884,7 +903,6 @@ exp: exp '+' exp
 				{
 					// SINTESIS 
 					$$.tipo = $1.tipo;
-					$$.es_direccion = $1.es_direccion;
 
 					fprintf(fout, ";R85:\t<exp> ::= <elemento_vector>\n");
 				}
@@ -1145,8 +1163,18 @@ identificador: TOK_IDENTIFICADOR
 							//GENERAMOS EL CODIGO
 							declarar_variable(fout, $1.lexema, $1.tipo, clase_actual);
 						}
-						else{
-							errorSemantico("ERROR. Variable de tipo no escalar");
+						else if (clase_actual == VECTOR){
+							pos_variable_local_actual++;
+							num_variables_locales_actual++;
+
+							// ANADIMOS A LA TABLA HASH
+							insertarSimbolo(crear_info_simbolo($1.lexema, VARIABLE, tipo_actual, clase_actual, tamanio_vector_actual, 0));
+
+							//GENERAMOS EL CODIGO
+							declarar_variable(fout, $1.lexema, $1.tipo, tamanio_vector_actual);
+						}
+						else {
+							errorSemantico("ERROR. Variable de tipo raro");
 							return -1;
 						}
 					}

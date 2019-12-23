@@ -152,7 +152,7 @@ void sumar(FILE *fpasm, int es_variable_1, int es_variable_2)
     }
     if (es_variable_1)
     {
-        fprintf(fpasm, "\tmov eax, dword [eax]\n");
+        fprintf(fpasm, "\tmov dword eax, [eax]\n");
     }
 
     /*Operamos y guardamos el resultado en la pila*/
@@ -173,7 +173,7 @@ void restar(FILE *fpasm, int es_variable_1, int es_variable_2)
     }
     if (es_variable_1)
     {
-        fprintf(fpasm, "\tmov eax, dword [eax]\n");
+        fprintf(fpasm, "\tmov dword eax, [eax]\n");
     }
 
     /*Operamos y guardamos el resultado en la pila*/
@@ -194,7 +194,7 @@ void multiplicar(FILE *fpasm, int es_variable_1, int es_variable_2)
     }
     if (es_variable_1)
     {
-        fprintf(fpasm, "\tmov eax, dword [eax]\n");
+        fprintf(fpasm, "\tmov dword eax, [eax]\n");
     }
 
     /*Operamos y guardamos el resultado en la pila*/
@@ -215,7 +215,7 @@ void dividir(FILE *fpasm, int es_variable_1, int es_variable_2)
     }
     if (es_variable_1)
     {
-        fprintf(fpasm, "\tmov eax, dword [eax]\n");
+        fprintf(fpasm, "\tmov dword eax, [eax]\n");
     }
 
     /*comprobacion del divisor*/
@@ -242,7 +242,7 @@ void o(FILE *fpasm, int es_variable_1, int es_variable_2)
     }
     if (es_variable_1)
     {
-        fprintf(fpasm, "\tmov eax, dword [eax]\n");
+        fprintf(fpasm, "\tmov dword eax, [eax]\n");
     }
 
     /*Operamos y guardamos el resultado en la pila*/
@@ -263,7 +263,7 @@ void y(FILE *fpasm, int es_variable_1, int es_variable_2)
     }
     if (es_variable_1)
     {
-        fprintf(fpasm, "\tmov eax, dword [eax]\n");
+        fprintf(fpasm, "\tmov dword eax, [eax]\n");
     }
 
     /*Operamos y guardamos el resultado en la pila*/
@@ -278,7 +278,7 @@ void cambiar_signo(FILE *fpasm, int es_variable)
 
     if (es_variable)
     {
-        fprintf(fpasm, "\tmov eax, dword [eax]\n");
+        fprintf(fpasm, "\tmov dword eax, [eax]\n");
     }
 
     /*Operamos y guardamos el resultado en la pila*/
@@ -294,7 +294,7 @@ void no(FILE *fpasm, int es_variable, int cuantos_no)
     /*comprobamos el tipo de operandos*/
     if (es_variable)
     {
-        fprintf(fpasm, "\tmov eax, dword [eax]\n");
+        fprintf(fpasm, "\tmov dword eax, [eax]\n");
     }
     /*Comparacion*/
     fprintf(fpasm, "\tcmp eax, 0\n");
@@ -327,20 +327,20 @@ void igual(FILE *fpasm, int es_variable1, int es_variable2, int etiqueta)
     }
     if (es_variable1)
     {
-        fprintf(fpasm, "\tmov eax, dword [eax]\n");
+        fprintf(fpasm, "\tmov dword eax, [eax]\n");
     }
     /*Comparacion*/
     fprintf(fpasm, "\tcmp eax, edx\n");
     /*Salto si se cumple la condicion*/
     /*TODO lo mismo hay que poner near idk*/
-    fprintf(fpasm, "\tje _igual_%d\n", etiqueta);
+    fprintf(fpasm, "\tje near _igual_%d\n", etiqueta);
     /*Caso cuando no se cumple la condicion*/
-    fprintf(fpasm, "\tpush 0\n");
+    fprintf(fpasm, "\tpush dword 0\n");
     /*y nos vamos*/
-    fprintf(fpasm, "\tjmp _fin_igual_%d\n", etiqueta);
+    fprintf(fpasm, "\tjmp near _fin_igual_%d\n", etiqueta);
     /*Cuando si es igual*/
     fprintf(fpasm, "_igual_%d:\n", etiqueta);
-    fprintf(fpasm, "\tpush 1\n");
+    fprintf(fpasm, "\tpush dword 1\n");
     fprintf(fpasm, "_fin_igual_%d:\n", etiqueta);
 
     fprintf(fpasm, "\n\n");
@@ -358,7 +358,7 @@ void distinto(FILE *fpasm, int es_variable1, int es_variable2, int etiqueta)
     }
     if (es_variable1)
     {
-        fprintf(fpasm, "\tmov eax, dword [eax]\n");
+        fprintf(fpasm, "\tmov dword eax, [eax]\n");
     }
     /*Comparacion*/
     fprintf(fpasm, "\tcmp eax, edx\n");
@@ -389,7 +389,7 @@ void menor_igual(FILE *fpasm, int es_variable1, int es_variable2, int etiqueta)
     }
     if (es_variable1)
     {
-        fprintf(fpasm, "\tmov eax, dword [eax]\n");
+        fprintf(fpasm, "\tmov dword eax, [eax]\n");
     }
     /*Comparacion*/
     fprintf(fpasm, "\tcmp eax, edx\n");
@@ -420,7 +420,7 @@ void mayor_igual(FILE *fpasm, int es_variable1, int es_variable2, int etiqueta)
     }
     if (es_variable1)
     {
-        fprintf(fpasm, "\tmov eax, dword [eax]\n");
+        fprintf(fpasm, "\tmov dword eax, [eax]\n");
     }
     /*Comparacion*/
     fprintf(fpasm, "\tcmp eax, edx\n");
@@ -451,7 +451,7 @@ void menor(FILE *fpasm, int es_variable1, int es_variable2, int etiqueta)
     }
     if (es_variable1)
     {
-        fprintf(fpasm, "\tmov eax, dword [eax]\n");
+        fprintf(fpasm, "\tmov dword eax, [eax]\n");
     }
     /*Comparacion*/
     fprintf(fpasm, "\tcmp eax, edx\n");
@@ -482,7 +482,7 @@ void mayor(FILE *fpasm, int es_variable1, int es_variable2, int etiqueta)
     }
     if (es_variable1)
     {
-        fprintf(fpasm, "\tmov eax, dword [eax]\n");
+        fprintf(fpasm, "\tmov dword eax, [eax]\n");
     }
     /*Comparacion*/
     fprintf(fpasm, "\tcmp eax, edx\n");
@@ -549,7 +549,7 @@ void ifthenelse_inicio(FILE *fpasm, int exp_es_variable, int etiqueta)
 
     if (exp_es_variable)
     {
-        fprintf(fpasm, "\tmov eax, dword [eax]\n");
+        fprintf(fpasm, "\tmov dword eax, [eax]\n");
     }
 
     fprintf(fpasm, "\tcmp eax, 0\n");
@@ -561,7 +561,7 @@ void ifthen_inicio(FILE *fpasm, int exp_es_variable, int etiqueta)
 
     if (exp_es_variable)
     {
-        fprintf(fpasm, "\tmov eax, dword [eax]\n");
+        fprintf(fpasm, "\tmov dword eax, [eax]\n");
     }
 
     fprintf(fpasm, "\tcmp eax, 0\n");
@@ -623,7 +623,7 @@ void while_exp_pila(FILE *fpasm, int exp_es_variable, int etiqueta)
 
     if (exp_es_variable)
     {
-        fprintf(fpasm, "\tmov eax, dword [eax]\n");
+        fprintf(fpasm, "\tmov dword eax, [eax]\n");
     }
 
     fprintf(fpasm, "\tcmp eax, 0\n");

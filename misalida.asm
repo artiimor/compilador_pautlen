@@ -60,7 +60,7 @@ main:
 ;D:	;
 	pop dword edx
 	pop dword eax
-	mov eax, dword [eax]
+	mov dword eax, [eax]
 	add eax, edx
 	push dword eax
 
