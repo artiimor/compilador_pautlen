@@ -96,7 +96,7 @@
 %type <atributos> clase_escalar
 %type <atributos> clase_vector
 %type <atributos> condicional
-%type <atributos> if_exp_sentencias
+%type <atributos> if_else_exp
 %type <atributos> if_exp
 %type <atributos> exp
 %type <atributos> asignacion
@@ -568,42 +568,42 @@ asignacion:	TOK_IDENTIFICADOR '=' exp
 /*
 	CONDICIONALES
 */
-condicional: if_exp_sentencias '}' {
+condicional: if_exp ')' '{' sentencias '}' {
     
 		// GENERACION
-		ifthenelse_fin(fout, $1.etiqueta); 
+		ifthen_fin(fout, $1.etiqueta); 
 		
 		fprintf(fout, ";R50:\t<condicional> ::=	if ( <exp> ) { <sentencias> } \n");
 		}
-| if_exp_sentencias '}' TOK_ELSE '{' sentencias '}' {
+| if_else_exp TOK_ELSE '{' sentencias '}' {
 
 		// GENERACION
-    ifthenelse_fin(fout, $1.etiqueta);
+    	ifthenelse_fin(fout, $1.etiqueta);
 
 		fprintf(fout, ";R51:\t<condicional> ::= if ( <exp> ) { <sentencias> } else { <sentencias> }\n");
 };
 
-if_exp: TOK_IF '(' exp ')' '{' {
+if_exp: TOK_IF '(' exp {
   //COMPROBACIONES SEMANTICAS
 	if($3.tipo != BOOLEANO){
 			errorSemantico("Tipo del condicional no booleano\n");
 			return -1;
 	}
 		
-  //SINTESIS
-	$$.etiqueta = cuantos++;
+  	//SINTESIS
+	$$.etiqueta = cuantos;
 
 	//GENERACION
-  ifthen_inicio(fout, $3.es_direccion, $$.etiqueta);
+  ifthen_inicio(fout, $3.es_direccion, cuantos);
 };
 
-if_exp_sentencias: if_exp sentencias {
+if_else_exp: if_exp ')' '{'  sentencias '}' {
 
 	// SINTESIS
-  $$.etiqueta = $1.etiqueta;
+  	$$.etiqueta = $1.etiqueta;
 
 	// GENERACION
-  ifthenelse_fin_then(fout, $$.etiqueta);
+  	ifthenelse_fin_then(fout, $1.etiqueta);
 }
 
 
@@ -832,7 +832,6 @@ exp: exp '+' exp
 
 					// GENERACION DE CODIGO
 					no(fout, $2.es_direccion, cuantos);
-					cuantos++;
 
 					// SINTESIS
 					$$.es_direccion = FALSE;
@@ -948,8 +947,8 @@ comparacion: exp TOK_IGUAL exp
 					}
 
 					// GENERACION DE CODIGO
-					igual(fout, $1.es_direccion, $3.es_direccion, cuantos);
-					cuantos++;
+					igual(fout, $1.es_direccion, $3.es_direccion, cuantos++);
+					
 
 					// SINTESIS
 					$$.es_direccion = FALSE;
@@ -967,8 +966,7 @@ comparacion: exp TOK_IGUAL exp
 					}
 
 					// GENERACION DE CODIGO
-					distinto(fout, $1.es_direccion, $3.es_direccion, cuantos);
-					cuantos++;
+					distinto(fout, $1.es_direccion, $3.es_direccion, cuantos++);
 
 					// SINTESIS
 					$$.es_direccion = FALSE;
@@ -986,8 +984,7 @@ comparacion: exp TOK_IGUAL exp
 					}
 
 					// GENERACION DE CODIGO
-					mayor_igual(fout, $1.es_direccion, $3.es_direccion, cuantos);
-					cuantos++;
+					mayor_igual(fout, $1.es_direccion, $3.es_direccion, cuantos++);
 
 					// SINTESIS
 					$$.es_direccion = FALSE;
@@ -1005,8 +1002,7 @@ comparacion: exp TOK_IGUAL exp
 					}
 
 					// GENERACION DE CODIGO
-					menor_igual(fout, $1.es_direccion, $3.es_direccion, cuantos);
-					cuantos++;
+					menor_igual(fout, $1.es_direccion, $3.es_direccion, cuantos++);
 
 					// SINTESIS
 					$$.es_direccion = FALSE;
@@ -1024,8 +1020,7 @@ comparacion: exp TOK_IGUAL exp
 					}
 
 					// GENERACION DE CODIGO
-					mayor(fout, $1.es_direccion, $3.es_direccion, cuantos);
-					cuantos++;
+					mayor(fout, $1.es_direccion, $3.es_direccion, cuantos++);
 
 					// SINTESIS
 					$$.es_direccion = FALSE;
@@ -1043,8 +1038,7 @@ comparacion: exp TOK_IGUAL exp
 					}
 
 					// GENERACION DE CODIGO
-					menor(fout, $1.es_direccion, $3.es_direccion, cuantos);
-					cuantos++;
+					menor(fout, $1.es_direccion, $3.es_direccion, cuantos++);
 
 					// SINTESIS
 					$$.es_direccion = FALSE;
