@@ -11,13 +11,13 @@ segment .bss
 ;D:	int
 ;R10:	<tipo> ::= int
 ;D:	[
-;D:	3
+;D:	20
 ;D:	]
 ;R15:	<clase_vector>: array <tipo> [ <constante_entera> ];R7:	<clase> ::= <clase_vector>
 ;D:	vector1
 ;D:	;
 ;declarar_variable
-	_vector1 resd 3
+	_vector1 resd 20
 ;R108:	<identificador> ::= TOK_IDENTIFICADOR 
 ;R18:	<identificadores> ::= <identificador> 
 ;R4:	<declaracion> ::= <clase> <identificadores> ;
@@ -43,7 +43,7 @@ main:
 	pop dword eax
 	cmp eax,0
 	jl out_of_range_vector_fin
-	cmp eax, 2
+	cmp eax, 19
 	jg out_of_range_vector_fin
 	mov dword edx, _vector1
 	lea eax, [edx + eax*4]
@@ -52,17 +52,17 @@ main:
 
 ;R48:	<elemento_vector> ::= <identificador> [ <exp> ]
 ;D:	=
-;D:	10
+;D:	6
 ;R104:	<constante_entera> ::= <numero> 
 ;R100:	<constante> ::= <constante_entera> 
-	push dword 10
+	push dword 6
 ;R81:	<exp> ::= <constante> 
 ;D:	;
 	push dword 0
 	pop dword eax
 	cmp eax,0
 	jl out_of_range_vector_fin
-	cmp eax, 2
+	cmp eax, 19
 	jg out_of_range_vector_fin
 	mov dword edx, _vector1
 	lea eax, [edx + eax*4]
@@ -88,7 +88,7 @@ main:
 	pop dword eax
 	cmp eax,0
 	jl out_of_range_vector_fin
-	cmp eax, 2
+	cmp eax, 19
 	jg out_of_range_vector_fin
 	mov dword edx, _vector1
 	lea eax, [edx + eax*4]
@@ -97,17 +97,17 @@ main:
 
 ;R48:	<elemento_vector> ::= <identificador> [ <exp> ]
 ;D:	=
-;D:	20
+;D:	9
 ;R104:	<constante_entera> ::= <numero> 
 ;R100:	<constante> ::= <constante_entera> 
-	push dword 20
+	push dword 9
 ;R81:	<exp> ::= <constante> 
 ;D:	;
 	push dword 1
 	pop dword eax
 	cmp eax,0
 	jl out_of_range_vector_fin
-	cmp eax, 2
+	cmp eax, 19
 	jg out_of_range_vector_fin
 	mov dword edx, _vector1
 	lea eax, [edx + eax*4]
@@ -124,16 +124,16 @@ main:
 ;R32:	<sentencia> ::= <sentencia_simple> ; 
 ;D:	vector1
 ;D:	[
-;D:	2
+;D:	15
 ;R104:	<constante_entera> ::= <numero> 
 ;R100:	<constante> ::= <constante_entera> 
-	push dword 2
+	push dword 15
 ;R81:	<exp> ::= <constante> 
 ;D:	]
 	pop dword eax
 	cmp eax,0
 	jl out_of_range_vector_fin
-	cmp eax, 2
+	cmp eax, 19
 	jg out_of_range_vector_fin
 	mov dword edx, _vector1
 	lea eax, [edx + eax*4]
@@ -142,17 +142,17 @@ main:
 
 ;R48:	<elemento_vector> ::= <identificador> [ <exp> ]
 ;D:	=
-;D:	30
+;D:	69
 ;R104:	<constante_entera> ::= <numero> 
 ;R100:	<constante> ::= <constante_entera> 
-	push dword 30
+	push dword 69
 ;R81:	<exp> ::= <constante> 
 ;D:	;
 	push dword 2
 	pop dword eax
 	cmp eax,0
 	jl out_of_range_vector_fin
-	cmp eax, 2
+	cmp eax, 19
 	jg out_of_range_vector_fin
 	mov dword edx, _vector1
 	lea eax, [edx + eax*4]
@@ -179,7 +179,7 @@ main:
 	pop dword eax
 	cmp eax,0
 	jl out_of_range_vector_fin
-	cmp eax, 2
+	cmp eax, 19
 	jg out_of_range_vector_fin
 	mov dword edx, _vector1
 	lea eax, [edx + eax*4]
@@ -212,7 +212,7 @@ main:
 	pop dword eax
 	cmp eax,0
 	jl out_of_range_vector_fin
-	cmp eax, 2
+	cmp eax, 19
 	jg out_of_range_vector_fin
 	mov dword edx, _vector1
 	lea eax, [edx + eax*4]
@@ -245,7 +245,7 @@ main:
 	pop dword eax
 	cmp eax,0
 	jl out_of_range_vector_fin
-	cmp eax, 2
+	cmp eax, 19
 	jg out_of_range_vector_fin
 	mov dword edx, _vector1
 	lea eax, [edx + eax*4]

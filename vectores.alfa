@@ -1,11 +1,11 @@
 main
 {
 
-    array int[3] vector1;
+    array int[20] vector1;
 	
-	vector1[0]=10;
-	vector1[1]=20;
-	vector1[2]=30;
+	vector1[0]=6;
+	vector1[1]=9;
+	vector1[15]=69;
 	
 	printf vector1[0];
 	printf vector1[1];

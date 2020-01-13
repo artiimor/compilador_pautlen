@@ -553,11 +553,17 @@ asignacion:	TOK_IDENTIFICADOR '=' exp
   				//$1.valor ES EL INDICE DEL VECTOR EN EL QUE QUEREMOS ASIGNAR exp
 					
 					char *aux;
-					aux = (char*)malloc(1);
-					aux[0] = (char)($1.valor_entero + 48);
+					if($1.valor_entero < 10) {
+        			    aux = (char*)malloc(1);
+        			    aux[0] = (char)($1.valor_entero + 48);
+        			}
+        			else {
+        			    aux = (char*)malloc(1);
+        			    aux[0] = (char)(50);
+        			}
 					escribir_operando(fout, aux, 0);
-  				escribir_elemento_vector(fout, $1.lexema, simbolo->adicional1, $3.es_direccion);
-  				asignarDestinoEnPila(fout, $3.es_direccion);
+  					escribir_elemento_vector(fout, $1.lexema, simbolo->adicional1, $3.es_direccion);
+  					asignarDestinoEnPila(fout, $3.es_direccion);
 					fprintf(fout, ";R44:\t<asignacion> ::= <elemento_vector> = <exp>\n");
 
 };
