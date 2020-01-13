@@ -9,5 +9,5 @@ main
 	
 	printf vector1[0];
 	printf vector1[1];
-	printf vector1[2];
+	printf vector1[15];
 }
