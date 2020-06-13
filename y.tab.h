@@ -30,8 +30,8 @@
    This special exception was added by the Free Software Foundation in
    version 2.2 of Bison.  */
 
-#ifndef YY_YY_ALFA_TAB_H_INCLUDED
-# define YY_YY_ALFA_TAB_H_INCLUDED
+#ifndef YY_YY_Y_TAB_H_INCLUDED
+# define YY_YY_Y_TAB_H_INCLUDED
 /* Debug traces.  */
 #ifndef YYDEBUG
 # define YYDEBUG 0
@@ -47,7 +47,7 @@ extern int yydebug;
   {
     TOK_MAIN = 258,
     TOK_INT = 259,
-    TOK_BOOLEAN = 260,
+    TOK_BOOLEANO = 260,
     TOK_ARRAY = 261,
     TOK_FUNCTION = 262,
     TOK_IF = 263,
@@ -84,24 +84,64 @@ extern int yydebug;
     TOK_TRUE = 294,
     TOK_ERROR = 295,
     fn_complete_name = 296,
-    if_exp = 297,
-    if_exp_sentencias = 298,
-    tipo_retorno = 299,
-    MENOSU = 300
+    tipo_retorno = 297,
+    MENOSU = 298
   };
 #endif
+/* Tokens.  */
+#define TOK_MAIN 258
+#define TOK_INT 259
+#define TOK_BOOLEANO 260
+#define TOK_ARRAY 261
+#define TOK_FUNCTION 262
+#define TOK_IF 263
+#define TOK_ELSE 264
+#define TOK_WHILE 265
+#define TOK_SCANF 266
+#define TOK_PRINTF 267
+#define TOK_RETURN 268
+#define TOK_IDENTIFICADOR 269
+#define TOK_PUNTOYCOMA 270
+#define TOK_COMA 271
+#define TOK_PARENTESISIZQUIERDO 272
+#define TOK_PARENTESISDERECHO 273
+#define TOK_CORCHETEIZQUIERDO 274
+#define TOK_CORCHETEDERECHO 275
+#define TOK_LLAVEIZQUIERDA 276
+#define TOK_LLAVEDERECHA 277
+#define TOK_ASIGNACION 278
+#define TOK_MAS 279
+#define TOK_MENOS 280
+#define TOK_DIVISION 281
+#define TOK_ASTERISCO 282
+#define TOK_AND 283
+#define TOK_OR 284
+#define TOK_NOT 285
+#define TOK_IGUAL 286
+#define TOK_DISTINTO 287
+#define TOK_MENORIGUAL 288
+#define TOK_MAYORIGUAL 289
+#define TOK_MENOR 290
+#define TOK_MAYOR 291
+#define TOK_CONSTANTE_ENTERA 292
+#define TOK_FALSE 293
+#define TOK_TRUE 294
+#define TOK_ERROR 295
+#define fn_complete_name 296
+#define tipo_retorno 297
+#define MENOSU 298
 
 /* Value type.  */
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 
 union YYSTYPE
 {
-#line 32 "alfa.y" /* yacc.c:1909  */
+#line 34 "alfa.y" /* yacc.c:1909  */
 
 	tipo_atributos atributos;
 	
 
-#line 105 "alfa.tab.h" /* yacc.c:1909  */
+#line 145 "y.tab.h" /* yacc.c:1909  */
 };
 
 typedef union YYSTYPE YYSTYPE;
@@ -114,4 +154,4 @@ extern YYSTYPE yylval;
 
 int yyparse (void);
 
-#endif /* !YY_YY_ALFA_TAB_H_INCLUDED  */
+#endif /* !YY_YY_Y_TAB_H_INCLUDED  */

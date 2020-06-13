@@ -1,6 +1,6 @@
 #include "alfa.h"
 #include "y.tab.h"
-#include "generacion.h"
+#include "generador_codigo/generacion.h"
 
 extern FILE* yyin;
 FILE* fout;

@@ -3,9 +3,9 @@
 	#include <stdio.h>
 
 	#include "alfa.h"
-	#include "tablahash.h"
-	#include "generacion.h"
-	#include "tablasimbolos.h"
+	#include "tabla_simbolos/tablahash.h"
+	#include "generador_codigo/generacion.h"
+	#include "tabla_simbolos/tablasimbolos.h"
 
 	#include "y.tab.h"
 	
