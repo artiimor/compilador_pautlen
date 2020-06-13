@@ -14,20 +14,20 @@ Prácticas de laboratorio para Proyecto de Autómatas y Lenguajes en la UAM
 
 ## Resumen
 El compilador (o mejor dicho, intérprete) se basa en la especificación del lenguaje alfa. Contiene los siguientes directorios
-- **ejemplos_afa** Ejemplos de la especificación alfa
+- **ejemplos_alfa** Ejemplos de la especificación alfa
 - **ejemplos_asm** Los anteriores ejemplos compilados de forma correcta
 - **generador de código** Crea código en asm
 - **tabla_simbolos** Tabla hash y tabla de símbolos
 
 ## Ejecutarlo
 - **Antes que nada** 
-    * make clean
-    * make
+     make clean
+     make
 - **Ejecutar un ejemplo** 
-    * ./alfa ejemplos_alfa/<nombre_archivo> misalida.asm
-    * make asm
+     ./alfa ejemplos_alfa/<nombre_archivo> misalida.asm
+     make asm
 - **Compilar todos los ejemplos** 
-    * make compilar_ejemplos
+     make compilar_ejemplos
 
 ## NOTAS
 - **No funcionan**
